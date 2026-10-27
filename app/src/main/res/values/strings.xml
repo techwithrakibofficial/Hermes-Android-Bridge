@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Hermes Bridge</string>
+    <string name="service_name">Hermes Bridge • Manual action tests</string>
+    <string name="service_summary">User-requested Home and Back actions</string>
+    <string name="service_description">This development version performs Home and Back only when you tap a test button. It does not read screen content, record input, or connect to Hermes yet. Enable only if you want these manual tests. You can disable this service at any time in Accessibility settings.</string>
+    <style name="AppTheme" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:statusBarColor">#0B1220</item>
+        <item name="android:navigationBarColor">#0B1220</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:colorAccent">#5EEAD4</item>
+    </style>
+</resources>

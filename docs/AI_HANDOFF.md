@@ -24,3 +24,6 @@ Commit minimal Android companion and CI build, then inspect build evidence.
 
 ## Verification
 No new Android feature or APK tested yet. Never equate successful compilation with phone or Hermes integration success.
+
+## Milestone 1 implementation
+Compose setup screen, Accessibility Home/Back manual tests, Android TTS output test, and Actions debug APK pipeline prepared. No bridge or chat integration is present. Compilation/lint and phone testing pending. Next: inspect first Actions build, fix only demonstrated failures, then obtain device results using docs/DEVICE_TEST.md.
