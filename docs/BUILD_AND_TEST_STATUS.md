@@ -1,25 +1,27 @@
 # Build and test status
+Updated 2026-10-28, Asia/Dhaka.
 
-Updated 2026-10-28 (Asia/Dhaka).
+| Check | Result |
+| --- | --- |
+| GitHub write access | Verified |
+| Static XML and workflow YAML validation | Passed |
+| Protected Accessibility service; no screen/gesture capability | Verified from source |
+| Android debug APK compilation | Passed in CI |
+| Android lintDebug | Passed in CI |
+| Artifact upload | Passed |
+| Prerelease APK publication | Passed |
+| Actual phone install/UI | Not tested |
+| Audible Android app TTS | Not tested |
+| EMI device Accessibility enablement | Unknown |
+| Actual Home/Back visible effect | Not tested |
+| Existing Telegram after companion install | Not retested |
+| Hermes chat/voice/secure local bridge | Not implemented |
 
-## Verified
-- GitHub repository write access: initial handoff commit succeeded after user updated access.
+Code commit: 3826ff409062c592bbc59a131fc39dd756301d73
+Successful run: https://github.com/techwithrakibofficial/Hermes-Android-Bridge/actions/runs/40604989249
+Development release: https://github.com/techwithrakibofficial/Hermes-Android-Bridge/releases/tag/dev-2
+APK size: 9,287,944 bytes.
 
-## Implemented, pending CI
-- Compose companion and Accessibility service.
-- Home/Back test controls and Android TTS test.
-- Pinned GitHub Actions compile/lint/artifact/prerelease pipeline.
+First run 40604912403 failed in SDK setup, before compilation: removed SDK package 'tools'. Fixed by requesting platform-tools explicitly. Replacement run completed successfully.
 
-## Not verified
-- Kotlin/Android compilation and lint: awaiting first CI run.
-- APK installation and rendering on user's phone.
-- Accessibility availability under EMI policy, Home/Back execution, audible app TTS.
-- Existing Telegram continuity after companion installation.
-
-## Not implemented
-- Local bridge authentication/server, Hermes adapter, chat, speech input and remote Android actions.
-
-Never report this milestone as working end-to-end without CI and device evidence.
-
-## First CI result
-Run 40604912403 failed before compilation: setup-android tried to install the removed SDK package 'tools'. Fixed by explicitly requesting platform-tools only. No app compile result yet.
+No emulator/device tests ran. Compilation and lint do not prove Android execution or audible speech. CI action deprecation warnings did not fail this run. Debug signing may differ between future CI runners; stable update signing is still pending.
