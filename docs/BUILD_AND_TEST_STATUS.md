@@ -20,3 +20,6 @@ Updated 2026-10-28 (Asia/Dhaka).
 - Local bridge authentication/server, Hermes adapter, chat, speech input and remote Android actions.
 
 Never report this milestone as working end-to-end without CI and device evidence.
+
+## First CI result
+Run 40604912403 failed before compilation: setup-android tried to install the removed SDK package 'tools'. Fixed by explicitly requesting platform-tools only. No app compile result yet.
