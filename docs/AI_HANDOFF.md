@@ -75,12 +75,24 @@ explaining why its earlier test could work while remote voice_ready stayed false
 Screen observation has a separate3.5s dispatch wait; mutation wait stays1.2s.
 Existing19-tool adapter remains compatible. Actual updated TTS remains untested.
 
+##0.4.1 published evidence
+Code cbe205a130d1d713a2910b812238a265296cd505; release dev-15 (not dev-14,
+which predates remote-TTS initialization fix). Android run40648224661 passed
+compile/lint,46 protocol checks and22 catalog checks with fake providers/handlers.
+Python run40648006478 passed61 tests each on3.12/3.14 (adapter unchanged by final
+app-only TTS patch). APK9,354,144 bytes;
+SHA2567ae075a2c17f5ab7ae65f8344a0199eeca843a5258df48cc18c31445f366cbd5.
+Actual updated TECNO app-list/screen/click/type/speech results remain pending.
+
 ## Single next action
-Build/lint/test0.4.1, then publish the APK and update this checkpoint. After install,
-renew pairing with the existing verified updater (SDK/provider/Telegram unchanged).
-First test explicit Bridge package open so app listing cannot block the safe UI
-acceptance workflow; independently verify catalog and voice diagnostics.
-Pinned0.4 updater remains d616cfb14878b1a7652212e2de49207118f9490f,
+Follow docs/FIX_0_4_1.md: Ctrl+C gateway, install dev-15 APK0.4.1, start bridge,
+enable screen control and copy fresh pairing export into native Termux. Pair via
+existing private mcp-env/bin/python and installed bridge_mcp.py --pair, then launch
+hermes-with-android gateway run. No SDK install/adapter download needed.
+Read bridge/device diagnostics, test explicit Bridge package open without catalog
+prerequisite, then safe UI test. Independently test app list and spoken audio.
+Pinned0.4 updater is still compatible if needed, but unnecessary for simple pairing:
+d616cfb14878b1a7652212e2de49207118f9490f,
 SHA2568bb988ef62eda3b4c2828fb3f8d1cc707f130d635ccae946a4624b6b8e841908.
 No repeated Hermes installation, gateway recovery or credential reset.
 

@@ -1,6 +1,6 @@
-# Local bridge protocol —0.4.0
+# Local bridge protocol —0.4.1
 
-For current install/pair/device steps use [UPGRADE_0_4.md](UPGRADE_0_4.md).
+For current repair/pair/device steps use [FIX_0_4_1.md](FIX_0_4_1.md).
 The former0.2 native Home/Back test is retained by the same action routes.
 
 ## Transport
@@ -9,7 +9,7 @@ User-started IPv4 loopback127.0.0.1:18765 only. Each session has a fresh random
 256-bit Bearer token. Exact Host127.0.0.1:18765 required; Origin and duplicate
 headers rejected. No public/LAN listener, CORS, redirects, proxy or tunnel.
 Each response is JSON/no-store/connection-close. Bounded ASCII headers/read
-request deadline2s; main-thread dispatch wait1.2s; client timeout5s. Token is
+request deadline2s; main-thread mutation wait1.2s/screen wait3.5s; client timeout5s. Token is
 private memory on Android and private mode600 pairing file in Ubuntu.
 
 Authenticated GET routes: /v1/status, /v1/screen, /v1/apps, /v1/device.
@@ -59,3 +59,9 @@ file theft. No root/ADB/EMI bypass is implemented.
 Run40642075456 passed compile/lint and46 real-socket checks with a fake Android
 handler. These do not test real Accessibility node correctness or app outcomes.
 See BUILD_AND_TEST_STATUS.md and AI_HANDOFF.md for actual phone evidence.
+
+0.4.1 catalog is one background query,30s cache,2.8s per-read wait with apps_loading
+if still pending, maximum150 labels resolved once. Exact-package opening resolves
+only that package. Remote voice engine is explicitly initialized. Device state
+includes voice_status/language, app_catalog_state and last_dispatch_error. These
+are diagnostic fields, not proof of a completed action or audible speech.

@@ -1,14 +1,18 @@
-# Build and test status —0.4.0
+# Build and test status —0.4.1
 
-- Android run40642075456: compile/lint,46 real-socket protocol checks with fake
-  Android handler, publication PASS. Release dev-12 APK9,354,144 bytes.
-- Python run40642075403:59 tests each on3.12 and3.14 PASS. Local3.12 also59 PASS.
-- Actual0.4 phone UI, TTS, dialer and per-app workflows: pending. Use the safe test
-  activity from docs/UPGRADE_0_4.md. Android acceptance is not visible completion.
-- User reports baseline0.3 works. Earlier logs prove private SDK1.26, pairing and
-  three-tool discovery. Status/Home round trip is user-reported; direct Back and
-  bridge Stop explicitly confirmed. Do not confuse these with0.4 phone evidence.
+- Android run40648224661: compile/lint,46 loopback protocol checks and22
+  app-catalog worker/cache/timeout/Stop checks PASS; release dev-15 published.
+  Android handlers/package providers in these tests are fakes.
+- Python run40648006478:61 tests each on3.12 and3.14 PASS; local3.12 also61 PASS.
+  Final app-only TTS patch changes no adapter Python source.
+- User0.4 phone output confirms actual Telegram bridge status and device-state
+  tools, screen permission true, remote voice_ready false. App listing failed503;
+  safe UI test did not run. These are the problems addressed by0.4.1.
+- Actual0.4.1 app listing, screen/click/type, TTS and per-app workflows: pending.
+  Follow docs/FIX_0_4_1.md. Android acceptance is not visible task completion.
+- Older direct Back/Stop explicitly confirmed; status/Home user-reported. Preserve
+  distinctions between prior phone evidence and newly passing CI tests.
 
-https://github.com/techwithrakibofficial/Hermes-Android-Bridge/actions/runs/40642075456
-https://github.com/techwithrakibofficial/Hermes-Android-Bridge/actions/runs/40642075403
-https://github.com/techwithrakibofficial/Hermes-Android-Bridge/releases/tag/dev-12
+https://github.com/techwithrakibofficial/Hermes-Android-Bridge/actions/runs/40648224661
+https://github.com/techwithrakibofficial/Hermes-Android-Bridge/actions/runs/40648006478
+https://github.com/techwithrakibofficial/Hermes-Android-Bridge/releases/tag/dev-15
