@@ -48,6 +48,29 @@ class SetupTests(unittest.TestCase):
         self.assertFalse(setup.config_is_ours({"command":"python3", "args":[str(path)], "enabled":False}, path))
         self.assertTrue(setup.config_is_ours({"command":sys.executable, "args":[str(path)], "enabled":True}, path))
 
+    def test_disabled_owned_entry_can_be_considered_for_probe_only(self):
+        path = Path("/private/bridge_mcp.py")
+        entry = {"command":"python3", "args":[str(path)], "enabled":False}
+        self.assertTrue(setup.config_is_ours(entry, path, allow_disabled=True))
+        self.assertFalse(setup.config_is_ours({"command":"other", "args":[str(path)], "enabled":False}, path, allow_disabled=True))
+
+    def test_existing_filters_must_not_be_overridden(self):
+        self.assertTrue(setup.tools_allowed({}))
+        self.assertFalse(setup.tools_allowed({"tools":{"include":["android_home"]}}))
+        self.assertFalse(setup.tools_allowed({"tools":{"exclude":["android_back"]}}))
+
+    def test_missing_sdk_does_not_install_without_explicit_flag(self):
+        with patch.object(setup.importlib.util, "find_spec", return_value=None), patch.object(setup.subprocess, "run") as run:
+            with self.assertRaisesRegex(setup.SetupError, "SDK missing"):
+                setup.ensure_sdk(False)
+            run.assert_not_called()
+
+    def test_failed_sdk_install_stops_and_uses_existing_python_exact_pin(self):
+        with patch.object(setup.importlib.util, "find_spec", return_value=None), patch.object(setup.subprocess, "run", side_effect=RuntimeError("install failed")) as run:
+            with self.assertRaises(RuntimeError):
+                setup.ensure_sdk(True)
+            run.assert_called_once_with([sys.executable, "-m", "pip", "install", "mcp==1.26.0"], check=True)
+
     def test_missing_pair_token_stops_before_runtime_import_or_write(self):
         with patch.dict("os.environ", {}, clear=True):
             self.assertEqual(setup.main(), 1)
