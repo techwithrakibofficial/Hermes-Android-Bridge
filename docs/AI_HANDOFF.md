@@ -26,7 +26,7 @@ Independently verified:
 - APK asset size: 9,287,944 bytes.
 
 ## 4. Exact stopping point
-User reports the initial Bridge app functions work, but speech is too fast to understand. This is user-reported device evidence, not an automated or independently observed test. Individual Home/Back/disconnect checks were not separately enumerated. Version 0.1.1 adds a saved speed slider (0.25–1.25, default 0.70), resets to the slower default, and checks engine rate errors. Build verification pending. Hermes connectivity remains explicitly unavailable in the app.
+User reports the initial Bridge app functions work, but speech is too fast to understand. This is user-reported device evidence, not an automated or independently observed test. Individual Home/Back/disconnect checks were not separately enumerated. Version 0.1.1 adds a saved speed slider (0.25–1.25, default 0.70), resets to the slower default, and checks engine rate errors. CI compile, lint, artifact upload and APK prerelease publication passed for version 0.1.1. Actual slower speech and preference persistence await phone verification. Hermes connectivity remains explicitly unavailable in the app.
 
 ## 5. Outstanding tasks and blockers
 - Verify slower speech and saved slider value on the phone; obtain separately itemized tests where needed.
@@ -38,7 +38,7 @@ User reports the initial Bridge app functions work, but speech is too fast to un
 - CI reports action runtime deprecation warnings; successful build is verified, future action maintenance remains.
 
 ## 6. Single next action
-Build version 0.1.1, then test the default speech speed and saved slider value on the phone.
+Install version 0.1.1 and test default speech speed, slider adjustment, and saved value after closing/reopening the app.
 
 ## 7. Continuation commands and files
 - Device procedure: docs/DEVICE_TEST.md.
@@ -46,3 +46,10 @@ Build version 0.1.1, then test the default speech speed and saved slider value o
 - Read docs/BUILD_AND_TEST_STATUS.md, TECHNICAL_DECISIONS.md and PROJECT_PLAN.md before implementation.
 - Do not reinstall Hermes or repeat Telegram pairing.
 - First CI run 40604912403 failed before compilation because setup-android requested removed SDK package 'tools'; fixed with explicit platform-tools. No need to revisit this resolved issue.
+
+## Latest verified patch — 0.1.1
+Code commit: 31bb9f4937754a14c0f23fdcf6105fac2fc9ea2e
+Successful run: https://github.com/techwithrakibofficial/Hermes-Android-Bridge/actions/runs/40606075816
+Release: https://github.com/techwithrakibofficial/Hermes-Android-Bridge/releases/tag/dev-3
+APK: https://github.com/techwithrakibofficial/Hermes-Android-Bridge/releases/download/dev-3/Hermes-Bridge-0.1.1.apk
+The prior 0.1.0 CI evidence above is historical. Latest app version is 0.1.1 (versionCode 2). No device speed or persistence result has yet been reported for this patch.

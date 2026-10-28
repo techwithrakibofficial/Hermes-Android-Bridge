@@ -10,3 +10,6 @@
 - APK is development-only with default debug signing. Long-term stable signing remains open.
 - Official reference: https://developer.android.com/reference/android/accessibilityservice/AccessibilityService
 - Compose compiler setup: https://developer.android.com/develop/ui/compose/compiler
+
+## Speech-rate patch (0.1.1)
+Default speech rate 0.70, selectable 0.25–1.25 in 0.05 increments. App-private SharedPreferences stores the chosen value. Apply rate during initialization and before each utterance; handle the engine error return. Stop current speech when the slider changes, then require an explicit Test tap. Engine-specific audible results require device confirmation. No system TTS or Termux setting is modified.

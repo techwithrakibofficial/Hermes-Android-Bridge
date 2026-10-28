@@ -22,3 +22,6 @@ Back visible result:
 Disable reflected in app:
 Existing Telegram still works:
 ```
+
+## 0.1.1 speech patch acceptance
+Install dev-3 / version 0.1.1. Confirm speed defaults to 0.70 on first use. Test speech; if too fast choose 0.50 and test again. Set another speed, fully close/reopen the app and verify the selected value persists. Tap Reset speed and verify 0.70 returns and persists. Record audible behavior; CI cannot confirm speech speed. Development builds can have different signing certificates: if Android rejects an in-place update, uninstall only Hermes Bridge and install the new APK, then enable its Accessibility service normally again. Do not uninstall or clear Termux/Telegram or Hermes data.

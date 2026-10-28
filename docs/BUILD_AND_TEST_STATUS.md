@@ -30,3 +30,5 @@ No emulator/device tests ran. Compilation and lint do not prove Android executio
 User says all initial companion functions work, but voice is too fast to understand. This confirms audible TTS by user report; individual Home/Back/disconnect tests were not separately listed. Screenshot shows native termux-api installed and a TTS command returned to prompt. Latest Telegram message has no visible reply in the screenshot; current gateway health cannot be inferred.
 
 Implemented slower default 0.70, slider range 0.25–1.25, saved preference across restarts, stop playback when adjusting, reset control and setSpeechRate error handling. VersionCode 2. New compile/lint and phone speed/persistence tests pending.
+
+0.1.1 verification: compile/lint, artifact and publication PASSED in run 40606075816 at commit 31bb9f4937754a14c0f23fdcf6105fac2fc9ea2e. Release dev-3 includes Hermes-Bridge-0.1.1.apk (9,287,940 bytes). Phone speed adjustment and preference persistence remain pending.
