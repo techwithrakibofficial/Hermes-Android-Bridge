@@ -16,8 +16,8 @@ import time
 import urllib.error
 import urllib.request
 
-SOURCE_COMMIT = "f54c454ca2d1787bdeb2797ee2baa73f504c026c"
-SERVER_SHA256 = "5cd4e6d865c2e35d70f9bc4a6981445097511ef691674b9abc9d8f26f697b53d"
+SOURCE_COMMIT = "3fad2328dea77584be2337744623ae5d3fe57d56"
+SERVER_SHA256 = "7471d22ebf140e2f88b5022c9f65f26a198a422692827dedb2f3b3a114b3c35f"
 ACP_REQUIREMENT = "agent-client-protocol==0.9.0"  # Exact Hermes v2026.5.29.2 optional dependency.
 
 
