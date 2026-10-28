@@ -20,3 +20,6 @@ APK: https://github.com/techwithrakibofficial/Hermes-Android-Bridge/releases/dow
 
 No emulator/device audio test ran. Engine voice-quality metadata is used for ordering only and does not prove humanlike output. Missing Bengali voices produce an actionable message; no silent English fallback.
 Previous successful builds: 0.1.0 run 40604989249; 0.1.1 run 40606075816. First run 40604912403 failed in SDK setup (removed tools package), fixed in workflow.
+
+## 0.2.0 implementation pending CI
+User reports all voice controls now okay. Implemented an opt-in authenticated loopback server and Home/Back dispatcher, session token rotation, bounded parser, request-ID replay protection and protocol test harness. Local test execution was unavailable because javac is not installed in this workspace; CI will compile and run the real-socket tests using a fake action handler. APK compile/lint and native Termux/Android tests pending. No Hermes agent API integration yet.

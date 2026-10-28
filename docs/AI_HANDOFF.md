@@ -45,3 +45,7 @@ Install 0.1.2; choose Google engine if installed, Bengali language and an availa
 Read docs/VOICE_SETUP.md, BUILD_AND_TEST_STATUS.md, TECHNICAL_DECISIONS.md and PROJECT_PLAN.md. Build with Gradle 8.11.1/JDK17/SDK35: gradle --no-daemon :app:assembleDebug :app:lintDebug.
 Do not repeat Hermes installation or Telegram pairing.
 Resolved CI issue: first run 40604912403 requested removed SDK package tools; explicitly requesting platform-tools fixed it.
+
+## Current milestone — 0.2.0 (supersedes previous stopping point)
+User reports voice now all okay. Proceeding to native Termux → Android secure local bridge. Implemented explicit Start/Stop in AccessibilityService, IPv4 loopback 18765, fresh 256-bit in-memory token per session, authenticated GET status and POST Home/Back, replay rejection with 256-action bounded session, header/read limits, main-thread bounded dispatch. No chat/agent adapter yet. Existing Hermes/Telegram untouched.
+Exact stopping point: code prepared; JVM protocol tests and APK compile/lint pending CI. Local workspace lacks javac. Next: verify CI/release, then user follows docs/LOCAL_BRIDGE.md and reports status/Home/Back/Stop results without secrets. Voice data choices and speed remain as previously implemented.

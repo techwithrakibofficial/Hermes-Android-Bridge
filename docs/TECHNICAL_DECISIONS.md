@@ -13,3 +13,6 @@
 
 ## Speech-rate patch (0.1.1)
 Default speech rate 0.70, selectable 0.25–1.25 in 0.05 increments. App-private SharedPreferences stores the chosen value. Apply rate during initialization and before each utterance; handle the engine error return. Stop current speech when the slider changes, then require an explicit Test tap. Engine-specific audible results require device confirmation. No system TTS or Termux setting is modified.
+
+## Local bridge milestone (0.2.0)
+Host the explicitly activated listener inside the enabled AccessibilityService; stop on unbind/destroy/interruption or user Stop. No auto-start or public endpoint. Ephemeral 256-bit token per session, no persisted secret, 127.0.0.1:18765 only, authenticated status and allowlisted Home/Back POSTs. Reserve request IDs before dispatch and never evict within a 256-action session. Main-thread FutureTask dispatch cancels a queued task on timeout; timeout responses do not prove non-execution if action was already running. No automatic retries. INTERNET permission is added solely because socket access requires it; no outbound network code is added by the bridge. Network TTS remains the user's existing engine opt-in.

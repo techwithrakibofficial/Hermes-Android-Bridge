@@ -20,6 +20,11 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - name: Test local bridge protocol over real sockets
+        run: |
+          mkdir -p /tmp/hermes-protocol-test
+          javac -d /tmp/hermes-protocol-test app/src/main/java/io/github/techwithrakibofficial/hermesbridge/LocalBridgeServer.java tests/LocalBridgeServerTest.java
+          java -cp /tmp/hermes-protocol-test LocalBridgeServerTest
       - uses: android-actions/setup-android@v3
         with:
           packages: 'platform-tools'
@@ -34,9 +39,9 @@ jobs:
       - name: Prepare phone download
         run: |
           mkdir -p dist
-          cp app/build/outputs/apk/debug/app-debug.apk dist/Hermes-Bridge-0.1.2.apk
+          cp app/build/outputs/apk/debug/app-debug.apk dist/Hermes-Bridge-0.2.0.apk
           cd dist
-          sha256sum Hermes-Bridge-0.1.2.apk > SHA256SUMS.txt
+          sha256sum Hermes-Bridge-0.2.0.apk > SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
           name: Hermes-Bridge-APK
@@ -66,4 +71,4 @@ jobs:
           BUILD_SHA: ${{ github.sha }}
           RUN_NUMBER: ${{ github.run_number }}
         run: |
-          gh release create "dev-${RUN_NUMBER}" dist/* --target "$BUILD_SHA" --prerelease --title "Hermes Bridge 0.1.2 • device test ${RUN_NUMBER}" --notes 'Development APK: choose installed TTS engine, Bengali or English, and a saved voice. Preview uses matching language and neutral pitch. Offline voices by default; online voices require opt-in and may send text to the engine service. Voice naturalness needs device listening tests. Hermes integration is not implemented yet. Debug signing may differ from previous builds.'
+          gh release create "dev-${RUN_NUMBER}" dist/* --target "$BUILD_SHA" --prerelease --title "Hermes Bridge 0.2.0 • device test ${RUN_NUMBER}" --notes 'Development APK: explicit local bridge Start/Stop, fresh 256-bit session token, authenticated status and Home/Back only. Binds to 127.0.0.1:18765. Protocol tests use a fake action handler; actual Android/Termux integration needs phone testing. Voice controls retained. Hermes agent integration is not implemented. Debug signing may differ from earlier builds.'

@@ -2,6 +2,10 @@ package io.github.techwithrakibofficial.hermesbridge
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.os.PersistableBundle
+import android.widget.Toast
 import android.os.Bundle
 import android.provider.Settings
 import android.speech.tts.TextToSpeech
@@ -42,6 +46,8 @@ class MainActivity : ComponentActivity() {
     @Composable
     private fun BridgeScreen() {
         val connected by BridgeAccessibilityService.connected.collectAsStateWithLifecycle()
+        val bridge by BridgeAccessibilityService.bridge.collectAsStateWithLifecycle()
+        var showBridgeConsent by remember { mutableStateOf(false) }
         var lastAction by rememberSaveable { mutableStateOf("No action requested") }
         var showDisclosure by remember { mutableStateOf(false) }
         var showEngines by remember { mutableStateOf(false) }
@@ -63,7 +69,7 @@ class MainActivity : ComponentActivity() {
                     style = MaterialTheme.typography.labelLarge)
                 Text("Your agent.\nYour phone.", style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Bold)
-                Text("Companion setup • v0.1.2", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Companion setup • v0.2.0", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 StatusCard("01  Accessibility", if (connected) "Service connected" else "Service not connected") {
                     Text("Home ও Back action পরীক্ষা করতে এই service নিজে enable করুন। এই version screen content পড়ে না।")
                     Button(onClick = { showDisclosure = true }, modifier = Modifier.fillMaxWidth()) {
@@ -116,13 +122,44 @@ class MainActivity : ComponentActivity() {
                     Text("Voice ও speed save থাকবে। Termux বা system TTS setting পরিবর্তন করা হয় না।",
                         style = MaterialTheme.typography.bodySmall)
                 }
-                StatusCard("03  Hermes connection", "Not connected • next milestone") {
-                    Text("Secure local bridge ও chat/voice input এখনও যুক্ত হয়নি। এই app থেকে এখন Hermes command পাঠানো যাবে না।")
+                StatusCard("03  Local Android bridge", bridge.message) {
+                    Text("Termux থেকে secret token দিয়ে শুধু Home ও Back command চালাতে পারবেন। Hermes chat এখনও যুক্ত হয়নি।")
+                    Button(enabled = connected && !bridge.running, onClick = { showBridgeConsent = true },
+                        modifier = Modifier.fillMaxWidth()) { Text("Start local bridge") }
+                    if (bridge.running) {
+                        Text("Local address: http://127.0.0.1:18765", style = MaterialTheme.typography.bodySmall)
+                        OutlinedButton(onClick = {
+                            val command = "export HERMES_BRIDGE_TOKEN='${bridge.token}' HERMES_BRIDGE_URL='http://127.0.0.1:18765'"
+                            val clip = ClipData.newPlainText("Hermes local pairing", command)
+                            clip.description.extras = PersistableBundle().apply {
+                                putBoolean("android.content.extra.IS_SENSITIVE", true)
+                            }
+                            getSystemService(ClipboardManager::class.java).setPrimaryClip(clip)
+                            Toast.makeText(this@MainActivity, "Pairing command copied. Paste only in your Termux.", Toast.LENGTH_LONG).show()
+                        }, modifier = Modifier.fillMaxWidth()) { Text("Copy Termux pairing command") }
+                        Text("Copied command শুধু নিজের Termux-এ paste করুন। এতে secret token থাকে। Stop করলে token বাতিল হবে।",
+                            style = MaterialTheme.typography.bodySmall)
+                        OutlinedButton(onClick = { BridgeAccessibilityService.stopBridge() },
+                            modifier = Modifier.fillMaxWidth()) { Text("Stop local bridge") }
+                    }
+                    Text(bridge.lastAction, style = MaterialTheme.typography.bodySmall)
+                    Text("Android request গ্রহণ করলেও ফোনের screen দেখে action নিশ্চিত করুন।",
+                        style = MaterialTheme.typography.bodySmall)
                 }
                 Text("Developer Options প্রয়োজন নেই। কোনো setting আপনার EMI policy দ্বারা blocked থাকলে bypass করবেন না; পরীক্ষার ফল জানান।",
                     color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
             }
         }
+        if (showBridgeConsent) AlertDialog(
+            onDismissRequest = { showBridgeConsent = false },
+            title = { Text("Allow local Home / Back commands?") },
+            text = { Text("Bridge চালু থাকলে এই ফোনের secret token থাকা client Home ও Back command দিতে পারবে। এটি শুধু 127.0.0.1-এ শোনে। আপনি Stop চাপলে, Accessibility বন্ধ করলে বা process বন্ধ হলে session শেষ হবে।") },
+            confirmButton = { TextButton(onClick = {
+                showBridgeConsent = false
+                BridgeAccessibilityService.startBridge()
+            }) { Text("Start bridge") } },
+            dismissButton = { TextButton(onClick = { showBridgeConsent = false }) { Text("Cancel") } }
+        )
         if (showDisclosure) AlertDialog(
             onDismissRequest = { showDisclosure = false },
             title = { Text("Enable manual action tests?") },
