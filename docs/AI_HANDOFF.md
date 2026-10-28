@@ -84,17 +84,28 @@ app-only TTS patch). APK9,354,144 bytes;
 SHA2567ae075a2c17f5ab7ae65f8344a0199eeca843a5258df48cc18c31445f366cbd5.
 Actual updated TECNO app-list/screen/click/type/speech results remain pending.
 
+## Latest phone evidence —0.4.1
+User pasted Telegram tool results after the0.4.1 upgrade: status ready/version0.4.1;
+TECNO KM9 Android16/SDK36; screen_control_enabled true; voice_ready true;
+voice_status "Voice ready. Test করে শুনুন।", voice_language en-US;
+app_catalog_state ready; last_dispatch_error none. One android_list_apps call
+returned110 launchable apps, truncated false, label_fallbacks0. No app opened or
+setting changed. This confirms those read tools and catalog on the actual phone,
+not independently observed screen actions or audible speech. This supersedes the
+prior app-list and remote-engine readiness blockers. Individual app labels alone
+are not evidence of an app's safety or behavior; no action on them is authorized.
+No Telegram home channel is set; /sethome in the verified private chat is optional
+for future scheduled delivery and unrelated to current bridge health.
+
 ## Single next action
-Follow docs/FIX_0_4_1.md: Ctrl+C gateway, install dev-15 APK0.4.1, start bridge,
-enable screen control and copy fresh pairing export into native Termux. Pair via
-existing private mcp-env/bin/python and installed bridge_mcp.py --pair, then launch
-hermes-with-android gateway run. No SDK install/adapter download needed.
-Read bridge/device diagnostics, test explicit Bridge package open without catalog
-prerequisite, then safe UI test. Independently test app list and spoken audio.
-Pinned0.4 updater is still compatible if needed, but unnecessary for simple pairing:
-d616cfb14878b1a7652212e2de49207118f9490f,
-SHA2568bb988ef62eda3b4c2828fb3f8d1cc707f130d635ccae946a4624b6b8e841908.
-No repeated Hermes installation, gateway recovery or credential reset.
+In the existing Telegram bot, open the exact Bridge package
+io.github.techwithrakibofficial.hermesbridge, observe and click Open safe control
+test (scroll using fresh targets if needed). Type পরীক্ষা সফল into Test message,
+click Increase test counter once, reobserve and report actual Draft/Counter.
+Stop on a failed step; no actions outside this test activity. User should verify
+visible draft and Counter:1. No reinstall/re-pair/new setup required now.
+Then test audible speech. Current saved language is en-US; Bengali speech needs
+selecting/testing Bengali in the app. voice_ready alone is not proof of sound.
 
 ## Still unimplemented or unverified
 - No live carrier/WhatsApp call audio, Telecom dialer role, incoming-call answer/
