@@ -66,10 +66,57 @@ class SetupTests(unittest.TestCase):
             run.assert_not_called()
 
     def test_failed_sdk_install_stops_and_uses_existing_python_exact_pin(self):
-        with patch.object(setup.importlib.util, "find_spec", return_value=None), patch.object(setup.subprocess, "run", side_effect=RuntimeError("install failed")) as run:
+        with patch.object(setup.sys, "prefix", "/private/mcp-env"), patch.object(setup.sys, "base_prefix", "/system"), patch.object(setup.importlib.util, "find_spec", return_value=None), patch.object(setup.subprocess, "run", side_effect=RuntimeError("install failed")) as run:
             with self.assertRaises(RuntimeError):
                 setup.ensure_sdk(True)
             run.assert_called_once_with([sys.executable, "-m", "pip", "install", "mcp==1.26.0"], check=True)
+
+    def test_system_python_never_receives_pip_install(self):
+        with patch.object(setup.sys, "prefix", "/system"), patch.object(setup.sys, "base_prefix", "/system"), patch.object(setup.importlib.util, "find_spec", return_value=None), patch.object(setup.subprocess, "run") as run:
+            with self.assertRaisesRegex(setup.SetupError, "system Python"):
+                setup.ensure_sdk(True)
+            run.assert_not_called()
+
+    def test_hermes_cli_uses_private_interpreter_not_old_shebang(self):
+        with patch.object(setup.shutil, "which", return_value="/usr/local/bin/hermes"), patch.object(setup.sys, "executable", "/private/mcp-env/bin/python"):
+            self.assertEqual(setup.hermes_command("gateway", "run"), ["/private/mcp-env/bin/python", "/usr/local/bin/hermes", "gateway", "run"])
+
+    def test_base_python_owned_entry_migrates_only_for_expected_script(self):
+        path = Path("/private/bridge_mcp.py")
+        with patch.object(setup.sys, "_base_executable", "/usr/bin/python3.14"):
+            entry = {"command":"/usr/bin/python3.14", "args":[str(path)], "enabled":False}
+            self.assertTrue(setup.config_is_ours(entry, path, allow_disabled=True, allow_base_python=True))
+            entry["args"] = ["/unrelated/server.py"]
+            self.assertFalse(setup.config_is_ours(entry, path, allow_disabled=True, allow_base_python=True))
+
+    def test_private_environment_requests_system_packages_without_pip_bootstrap(self):
+        with tempfile.TemporaryDirectory() as directory:
+            env = Path(directory)/"mcp-env"
+            with patch.object(setup.venv, "EnvBuilder") as builder, patch.object(setup.subprocess, "run") as run:
+                run.return_value.stdout = "1\n1\n"
+                setup.create_private_environment(env)
+                builder.assert_called_once_with(system_site_packages=True, with_pip=False, symlinks=True)
+                builder.return_value.create.assert_called_once_with(env)
+
+    def test_failed_private_environment_probe_prevents_install(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with patch.object(setup.venv, "EnvBuilder"), patch.object(setup.subprocess, "run") as run:
+                run.return_value.stdout = "1\n0\n"
+                with self.assertRaisesRegex(setup.SetupError, "unavailable"):
+                    setup.create_private_environment(Path(directory)/"env")
+
+    def test_real_venv_uses_its_own_prefix_and_sees_system_pip(self):
+        with tempfile.TemporaryDirectory() as directory:
+            env = Path(directory)/"mcp-env"
+            # This exercises actual venv creation, not package installation.
+            try:
+                python = setup.create_private_environment(env)
+            except setup.SetupError as error:
+                if "unavailable" in str(error):
+                    self.skipTest("Host base Python has no importable pip; phone's global pip is already confirmed")
+                raise
+            self.assertTrue(python.exists())
+            self.assertIn("include-system-site-packages = true", (env/"pyvenv.cfg").read_text())
 
     def test_missing_pair_token_stops_before_runtime_import_or_write(self):
         with patch.dict("os.environ", {}, clear=True):

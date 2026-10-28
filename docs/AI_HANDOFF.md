@@ -26,8 +26,9 @@ Local coding/testing:
 - Recovery helper integrations/hermes_bridge/recover_gateway.py added.13 recovery tests plus17 adapter tests =30 tests passed locally on Python3.12 using temp files/fake Telegram HTTP. No real account or phone recovery test yet.
 
 ## 4. Exact stopping point
-Telegram recovery previously succeeded by user-confirmed reply. User ran Android setup on phone: pinned adapter installed, Ubuntu→Android authenticated pairing PASSED. Actual Hermes MCP discovery failed because installed Python lacks the mcp SDK. User selected Save config anyway=y; android-bridge was saved disabled. Gateway was NOT restarted after that STOP; native Termux prompt is available.
-Prepared revised helper with explicit --install-sdk option, installing only missing mcp==1.26.0 via the existing Python (exact Hermes v2026.5.29.2 optional dependency). SDK preflight now precedes pairing/registration. It can reuse the existing private pairing, recognizes the owned disabled entry, probes before enabling, preserves tool filters and other config, then starts gateway only after successful discovery.41 local tests passed. Actual SDK installation and discovery are still pending on phone.
+Telegram recovery succeeded by user-confirmed reply. Android setup phone output confirmed adapter download and Ubuntu→Android authenticated pairing. First actual Hermes discovery failed because mcp SDK was absent; user saved owned android-bridge entry disabled.
+Second setup attempt tried mcp==1.26.0 in global Python and was blocked by Ubuntu PEP668 externally-managed-environment. SDK install did not succeed; gateway was NOT started afterward. Native prompt available. Do not repeat the old global-pip helper.
+Updated setup now saves/reexecutes itself using a private --system-site-packages venv (with_pip=False, inheriting confirmed global pip). It refuses global pip installs, installs SDK inside private Python, dispatches existing Hermes console script with that interpreter, migrates only the owned base-Python entry after probing, and saves a reusable launcher.47 local tests passed, including actual venv creation and pip visibility. Phone SDK/discovery still pending.
 
 ## 5. Outstanding/blockers
 1. Stop current foreground gateway, start Android app local bridge, copy pairing export into native Termux, then run the pinned setup command with explicit token forwarding to Ubuntu.
@@ -37,7 +38,7 @@ Prepared revised helper with explicit --install-sdk option, installing only miss
 5. Android may kill Termux processes; no background-uptime guarantee.
 
 ## 6. Single next action
-Keep Android local bridge running. From the current native Termux prompt run the new pinned helper command with --install-sdk, forwarding HERMES_BRIDGE_TOKEN if still exported; helper can reuse its private token file if not. It installs the version-specific SDK, validates current pairing, recovers the owned disabled entry and restarts gateway on success. Do not rerun the old helper (it rejects disabled entries). Then verify android_bridge_status through Telegram. Report installer/discovery STOP if it fails, not secrets.
+Keep Android local bridge running. From native Termux run the latest pinned downloader that SAVES setup_android_bridge.py then execs it with --install-sdk. This lets it restart under private Python. Token may be forwarded from native env or reused from the saved private pairing file. On success it automatically enables the owned entry and starts gateway. Report PASS/STOP and actual Telegram android_bridge_status tool result. Do not use old in-memory exec/global pip commands or break-system-packages.
 
 ## 7. Files/verification limits
 - integrations/hermes_bridge/RECOVERY.md: scope, checks, safe diagnostics and backups.
@@ -53,3 +54,6 @@ integrations/hermes_bridge/setup_android_bridge.py SHA256 6331a216e81885fa9a0ca4
 
 ## SDK-fix source/evidence
 Exact upstream v2026.5.29.2/pyproject.toml pins optional mcp=[mcp==1.26.0]. No Hermes upgrade or all-extras installation selected. New setup helper SHA256 7e73aa218cb75e47cd5778334fe7acf0d0e8a0004392c0022327759841829239. The installed SDK was missing, not merely disabled in config; the phone had never run real MCP discovery successfully.41 local tests cover install opt-in/exact interpreter+pin and owned-disabled recovery safeguards; they do not execute pip/network against the phone environment. Pairing and Ubuntu local bridge connectivity have direct phone PASS output.
+
+## Private runtime fix
+Updated setup SHA256 c7c0900286c845896f3c6ff46ce619ffe673bc3fbdb129c4f87ad1e9b24412ca. SDK venv: /root/.local/share/hermes-android-bridge/mcp-env. Future restart launcher after successful setup: proot-distro login ubuntu -- /root/.local/share/hermes-android-bridge/hermes-with-android gateway run. No new APK needed. Use private interpreter for both MCP client/gateway and adapter entry; global Hermes shebang alone cannot see private SDK. See integrations/hermes_bridge/PRIVATE_RUNTIME.md.47 local tests pass; no actual phone SDK install or MCP discovery success claimed.
