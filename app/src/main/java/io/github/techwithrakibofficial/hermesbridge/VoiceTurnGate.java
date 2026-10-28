@@ -10,6 +10,7 @@ public final class VoiceTurnGate {
     public long ticket() { return generation; }
     public boolean automatic() { return automatic; }
     public void setAutomatic(boolean value) { automatic = value; }
+    public boolean acceptsMicTap() { return state != State.LISTENING && state != State.WAITING; }
     public long listen() {
         if (state != State.IDLE && state != State.PAUSED) return -1;
         state = State.LISTENING;

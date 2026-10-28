@@ -12,6 +12,7 @@ import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
+import android.os.PowerManager
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
 
@@ -20,6 +21,7 @@ class CompanionService : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private lateinit var runtime: CompanionRuntime
     private var microphone = false
+    private var wake: PowerManager.WakeLock? = null
     override fun onCreate() {
         super.onCreate()
         runtime = CompanionRuntime.get(this)
@@ -61,6 +63,10 @@ class CompanionService : Service() {
             runtime.pauseVoice("Foreground permission unavailable. Open app and check permissions.")
             stopSelf(); return START_NOT_STICKY
         }
+        if (wake?.isHeld != true) {
+            try { wake = getSystemService(PowerManager::class.java).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Hermes:Companion").also { it.acquire(16 * 60_000L) } }
+            catch (_: Exception) { }
+        }
         runtime.allowCapture(microphone)
         when (intent.action) {
             LISTEN -> { runtime.automatic(intent.getBooleanExtra("automatic", false)); runtime.listen() }
@@ -73,8 +79,10 @@ class CompanionService : Service() {
     override fun onTaskRemoved(rootIntent: Intent?) { runtime.stopTask("App task closed"); stopForeground(STOP_FOREGROUND_REMOVE); stopSelf(); super.onTaskRemoved(rootIntent) }
     override fun onDestroy() {
         runtime.onIdle = null
+        runCatching { if (wake?.isHeld == true) wake?.release() }
+        wake = null
         runtime.allowCapture(false)
-        if (runtime.state.value.phase !in listOf("paused", "idle")) runtime.pauseVoice("Voice service stopped")
+        runtime.serviceEnded()
         scope.cancel()
         super.onDestroy()
     }

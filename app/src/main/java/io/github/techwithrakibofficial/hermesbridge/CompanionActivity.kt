@@ -61,6 +61,8 @@ class CompanionActivity : ComponentActivity() {
         var micDisclosure by remember { mutableStateOf(false) }
         var clearDialog by remember { mutableStateOf(false) }
         var historyDialog by remember { mutableStateOf(false) }
+        var notificationsGranted by remember { mutableStateOf(Build.VERSION.SDK_INT < 33 || checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) }
+        val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { notificationsGranted = it }
         val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
             if (granted[Manifest.permission.RECORD_AUDIO] == true || checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) startMic(requestedAutomatic)
             else runtime.pauseVoice("Mic permission denied. Text chat remains available.")
@@ -132,15 +134,18 @@ class CompanionActivity : ComponentActivity() {
                                 Checkbox(checked = state.networkSpeech, onCheckedChange = { runtime.options(network = it) })
                                 Text("Network speech allow করি। Android speech service audio online পাঠাতে পারে। Off রাখলে supported on-device recognition লাগবে।", Modifier.padding(top = 10.dp), style = MaterialTheme.typography.bodySmall)
                             } }
-                            item { Button(onClick = { runtime.pauseVoice("Voice setup opened"); startActivity(Intent(this@CompanionActivity, MainActivity::class.java)) }, modifier = Modifier.fillMaxWidth()) { Text("কণ্ঠ, language ও speed বাছুন") } }
-                            item { OutlinedButton(onClick = { try { startActivity(Intent(Settings.ACTION_VOICE_INPUT_SETTINGS)) } catch (_: Exception) { startActivity(Intent(Settings.ACTION_SETTINGS)) } }, modifier = Modifier.fillMaxWidth()) { Text("Android speech settings") } }
+                            item { Button(onClick = { runtime.pauseVoice("Voice setup opened", false); startActivity(Intent(this@CompanionActivity, MainActivity::class.java)) }, modifier = Modifier.fillMaxWidth()) { Text("কণ্ঠ, language ও speed বাছুন") } }
+                            item { OutlinedButton(onClick = { try { startActivity(Intent(Settings.ACTION_VOICE_INPUT_SETTINGS)) } catch (_: Exception) { try { startActivity(Intent(Settings.ACTION_SETTINGS)) } catch (_: Exception) { runtime.pauseVoice("Speech settings unavailable on this phone") } } }, modifier = Modifier.fillMaxWidth()) { Text("Android speech settings") } }
                             item { Text("App বাড়তি beep দেয় না। Recognizer-এর নিজস্ব sound ফোন/engine নিয়ন্ত্রণ করে। Busy/error-তে auto restart নেই। Voice session ১৫ মিনিটে pause হবে; mic চাপলে নতুন session।", style = MaterialTheme.typography.bodySmall) }
                         } else {
                             item { Text("Existing Hermes, একই ফোনে", style = MaterialTheme.typography.headlineMedium) }
                             item { Text("Android bridge: ${bridge.message}\nCompanion: ${state.status}") }
-                            item { Button(onClick = { runtime.pauseVoice("Bridge setup opened"); startActivity(Intent(this@CompanionActivity, MainActivity::class.java)) }, modifier = Modifier.fillMaxWidth()) { Text("Open Bridge setup") } }
+                            item { Button(onClick = { runtime.pauseVoice("Bridge setup opened", false); startActivity(Intent(this@CompanionActivity, MainActivity::class.java)) }, modifier = Modifier.fillMaxWidth()) { Text("Open Bridge setup") } }
                             item { OutlinedButton(onClick = { try { CompanionService.start(this@CompanionActivity, CompanionService.RESUME) } catch (_: Exception) { runtime.connect() } }, modifier = Modifier.fillMaxWidth()) { Text("Reconnect / check current task") } }
                             item { OutlinedButton(onClick = { copy("proot-distro login ubuntu -- /root/.local/share/hermes-android-bridge/hermes-companion-all") }, modifier = Modifier.fillMaxWidth()) { Text("Copy Termux companion launcher") } }
+                            if (!notificationsGranted && Build.VERSION.SDK_INT >= 33) item {
+                                OutlinedButton(onClick = { notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS) }, modifier = Modifier.fillMaxWidth()) { Text("Task Stop notification allow করুন") }
+                            }
                             item { Text("প্রথমবার pinned companion setup চালাতে হবে। Gateway/Telegram/cron আলাদা চলবে। App-এ provider API key দিতে হয় না। Bridge restart করলে pairing নবায়ন করুন।", style = MaterialTheme.typography.bodySmall) }
                             item { Text("Chat history শুধু app-এর private storage-এ থাকে; Hermes নিজস্ব session history-ও রাখে। Microphone audio file save হয় না। Network speech/AI provider-এর নিজস্ব data policy প্রযোজ্য।", style = MaterialTheme.typography.bodySmall) }
                             item { TextButton(enabled = !state.busy, onClick = { clearDialog = true }) { Text("Clear app chat history") } }
@@ -150,6 +155,7 @@ class CompanionActivity : ComponentActivity() {
                 }
                 Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface).padding(horizontal = 14.dp, vertical = 10.dp)) {
                     Text(state.status, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, maxLines = 3)
+                    if (state.voiceNotice.isNotBlank()) Text("Voice: " + state.voiceNotice, style = MaterialTheme.typography.labelSmall, maxLines = 2)
                     state.progress.takeLast(2).forEach { Text(it, style = MaterialTheme.typography.labelSmall, maxLines = 1) }
                     if (state.partial.isNotBlank()) Text(state.partial, Modifier.padding(vertical = 6.dp), maxLines = 3)
                     if (state.busy) LinearProgressIndicator(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp))
@@ -168,7 +174,10 @@ class CompanionActivity : ComponentActivity() {
             }
         }
         if (micDisclosure) AlertDialog(onDismissRequest = { micDisclosure = false }, title = { Text("Microphone ব্যবহার করবেন?") },
-            text = { Text("আপনি mic চাপলে Android speech service আপনার কথা text করবে এবং final text Hermes-এ একবার পাঠাবে। Network speech allow করলে audio service provider-এর কাছে যেতে পারে। Notification permission দিলে চলতি voice/task-এর Stop notification পাবেন। Stop-এ mic/speech থামবে।") },
+            text = { Column {
+                Text("Mic চাপলে final speech text Hermes-এ একবার পাঠানো হবে। Default on-device recognition লাগবে। Network speech allow করলে Android speech service audio online পাঠাতে পারে। Notification permission-এ চলতি task-এর Stop control পাবেন।")
+                Row { Checkbox(checked = state.networkSpeech, onCheckedChange = { runtime.options(network = it) }); Text("Network speech allow করি", Modifier.padding(top = 12.dp)) }
+            } },
             confirmButton = { TextButton(onClick = { micDisclosure = false; getPreferences(MODE_PRIVATE).edit().putBoolean("mic_consent", true).apply(); requestMic(requestedAutomatic) }) { Text("Continue") } },
             dismissButton = { TextButton(onClick = { micDisclosure = false }) { Text("Cancel") } })
         state.approval?.let { approval -> AlertDialog(onDismissRequest = {}, title = { Text("Tool approval") },

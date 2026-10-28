@@ -20,7 +20,7 @@ data class ToolApproval(val id: String, val title: String, val canAllow: Boolean
 data class CompanionState(
     val lines: List<ChatLine> = emptyList(), val conversations: List<ChatSummary> = emptyList(), val conversationId: String = "", val phase: String = "idle", val status: String = "প্রথমে Bridge setup ও companion server চালু করুন।",
     val connected: Boolean = false, val model: String = "Existing Hermes", val busy: Boolean = false,
-    val partial: String = "", val automatic: Boolean = false, val speakReplies: Boolean = true,
+    val partial: String = "", val voiceNotice: String = "", val automatic: Boolean = false, val speakReplies: Boolean = true,
     val networkSpeech: Boolean = false, val language: String = "bn-BD", val approval: ToolApproval? = null,
     val progress: List<String> = emptyList()
 )
@@ -79,7 +79,7 @@ class CompanionRuntime private constructor(private val context: Context) {
     }
     fun selectChat(id: String) {
         if (active != null || history.none { it.conversationId == id }) return
-        pauseVoice("Conversation selected")
+        pauseVoice("Conversation selected", false)
         conversation = id; prefs.edit().putString("conversation", id).apply()
         mutable.value = state.value.copy(lines = history.filter { it.conversationId == id }, conversationId = id)
         status("idle", "আগের conversation চালিয়ে যেতে পারেন।")
@@ -87,7 +87,7 @@ class CompanionRuntime private constructor(private val context: Context) {
     private fun token() = BridgeAccessibilityService.bridge.value.takeIf { it.running }?.token.orEmpty()
     private fun status(phase: String, text: String) { mutable.value = state.value.copy(phase = phase, status = text, automatic = gate.automatic()) }
     fun options(speak: Boolean = state.value.speakReplies, network: Boolean = state.value.networkSpeech, language: String = state.value.language) {
-        pauseVoice("Voice preferences updated; tap mic when ready")
+        pauseVoice("Voice preferences updated; tap mic when ready", false)
         prefs.edit().putBoolean("speak", speak).putBoolean("network_speech", network).putString("language", language).apply()
         mutable.value = state.value.copy(speakReplies = speak, networkSpeech = network, language = language)
     }
@@ -103,10 +103,12 @@ class CompanionRuntime private constructor(private val context: Context) {
                 val response = withContext(Dispatchers.IO) { api.call(auth, "/v1/health") }
                 mutable.value = state.value.copy(connected = true, model = response.optString("model", "Hermes"))
                 if (active != null && polling?.isActive != true) { jobToken = auth; poll(active!!, gate.request()) }
-                else if (active == null) status("idle", "Hermes connected। লিখুন বা mic চাপুন।")
+                else if (active == null) { status("idle", "Hermes connected। লিখুন বা mic চাপুন।"); onIdle?.invoke() }
             } catch (e: Exception) {
+                pauseVoice(readable(e.message))
                 mutable.value = state.value.copy(connected = false)
                 status("paused", readable(e.message))
+                onIdle?.invoke()
             }
         }
     }
@@ -143,7 +145,7 @@ class CompanionRuntime private constructor(private val context: Context) {
                     mutable.value = state.value.copy(busy = false)
                 }
                 // Ambiguous transport failure keeps ID for GET reconciliation; never resend text.
-                gate.pause(); mutable.value = state.value.copy(connected = false)
+                pauseVoice(readable(e.message)); mutable.value = state.value.copy(connected = false)
                 status("paused", readable(e.message) + " Reconnect দিয়ে একই task-এর অবস্থা দেখুন।")
                 onIdle?.invoke()
             }
@@ -160,7 +162,7 @@ class CompanionRuntime private constructor(private val context: Context) {
                     val phase = response.optString("state")
                     val rows = response.optJSONArray("progress") ?: JSONArray()
                     val approval = response.optJSONObject("approval")
-                    mutable.value = state.value.copy(connected = true, progress = (0 until rows.length()).map { rows.optString(it) },
+                    mutable.value = state.value.copy(connected = true, model = response.optString("model", state.value.model), progress = (0 until rows.length()).map { rows.optString(it) },
                         approval = approval?.let { ToolApproval(it.getString("id"), it.getString("title"), it.optBoolean("can_allow")) })
                     if (phase in listOf("completed", "failed", "cancelled", "interrupted")) {
                         active = null; prefs.edit().remove("active_job").apply()
@@ -176,7 +178,7 @@ class CompanionRuntime private constructor(private val context: Context) {
                                 onIdle?.invoke()
                             }
                         } else {
-                            gate.pause(); status("paused", readable(response.optString("error", phase)))
+                            pauseVoice(readable(response.optString("error", phase))); status("paused", readable(response.optString("error", phase)))
                             onIdle?.invoke()
                         }
                         return@launch
@@ -192,7 +194,7 @@ class CompanionRuntime private constructor(private val context: Context) {
                             mutable.value = state.value.copy(busy = false)
                             line("notice", "Task record পাওয়া যায়নি। ফোনের ফল যাচাই করুন; কোনো prompt auto resend হয়নি।")
                         }
-                        gate.pause(); mutable.value = state.value.copy(connected = false)
+                        pauseVoice(readable(e.message)); mutable.value = state.value.copy(connected = false)
                         status("paused", readable(e.message) + " Task ID রাখা আছে; Reconnect করুন।")
                         onIdle?.invoke(); return@launch
                     }
@@ -216,7 +218,7 @@ class CompanionRuntime private constructor(private val context: Context) {
     fun allowCapture(allowed: Boolean) { canCapture = allowed }
     fun automatic(enabled: Boolean) { gate.setAutomatic(enabled); mutable.value = state.value.copy(automatic = enabled) }
     fun listen() {
-        if (active != null || !canCapture) return
+        if (active != null || !canCapture || !gate.acceptsMicTap()) return
         val automatic = gate.automatic()
         gate.stop(); input.stop(); voice.stop(); SpeechOutputGate.stopAll()
         gate.setAutomatic(automatic)
@@ -227,8 +229,9 @@ class CompanionRuntime private constructor(private val context: Context) {
             voiceUntil = android.os.SystemClock.elapsedRealtime() + 15 * 60_000L
             handler.postDelayed({ if (voiceUntil > 0 && android.os.SystemClock.elapsedRealtime() >= voiceUntil) pauseVoice("১৫ মিনিট voice session শেষ। আবার শুরু করতে mic চাপুন।") }, 15 * 60_000L)
         }
+        mutable.value = state.value.copy(voiceNotice = "")
         status("listening", "শুনছি… কথা শেষ হলে একটি turn পাঠানো হবে।")
-        input.listen(state.value.language, state.value.networkSpeech,
+        val started = input.listen(state.value.language, state.value.networkSpeech,
             { partial -> if (ticket == gate.ticket()) mutable.value = state.value.copy(partial = partial) },
             { text ->
                 if (gate.finalResult(ticket)) {
@@ -236,10 +239,12 @@ class CompanionRuntime private constructor(private val context: Context) {
                 }
             },
             { error -> if (ticket == gate.ticket()) pauseVoice(error) })
+        if (!started && gate.ticket() == ticket) pauseVoice("Speech service busy; tap mic after it is ready")
     }
     private fun speak(text: String, ticket: Long) {
         if (!gate.speak(ticket)) return
-        val clean = text.replace(Regex("```[\\s\\S]*?```"), " Code screen-এ দেওয়া আছে। ").replace(Regex("https?://\\S+"), " link screen-এ আছে ").take(6000)
+        val cleaned = text.replace(Regex("```[\\s\\S]*?```"), " Code screen-এ দেওয়া আছে। ").replace(Regex("https?://\\S+"), " link screen-এ আছে ")
+        val clean = if (cleaned.length > 6000) cleaned.take(6000) + " বাকি অংশ screen-এ দেওয়া আছে।" else cleaned
         val chunks = SpeechChunks.split(clean, 1800)
         status("speaking", "বলছি… কথা বলতে mic চাপলে এই speech থামবে।")
         fun next(index: Int) {
@@ -259,13 +264,18 @@ class CompanionRuntime private constructor(private val context: Context) {
         }
         next(0)
     }
-    fun pauseVoice(reason: String) {
+    fun pauseVoice(reason: String, rememberReason: Boolean = true) {
         gate.pause(); input.stop(); voice.stop(); voiceUntil = 0
         handler.removeCallbacksAndMessages(null)
         runCatching { audio.abandonAudioFocusRequest(focus) }
-        mutable.value = state.value.copy(partial = "", automatic = false)
+        mutable.value = state.value.copy(partial = "", automatic = false, voiceNotice = if (rememberReason) reason else state.value.voiceNotice)
         if (active == null) status("paused", reason)
         if (active == null) onIdle?.invoke()
+    }
+    fun serviceEnded() {
+        val previous = state.value
+        pauseVoice("Voice service stopped", previous.phase !in listOf("paused", "idle"))
+        if (previous.phase in listOf("paused", "idle")) mutable.value = state.value.copy(phase = previous.phase, status = previous.status, voiceNotice = previous.voiceNotice)
     }
     fun stopTask(reason: String = "Stop requested") {
         pauseVoice(reason); SpeechOutputGate.stopAll()
@@ -283,7 +293,7 @@ class CompanionRuntime private constructor(private val context: Context) {
     }
     fun newChat(clear: Boolean = false) {
         if (active != null) return
-        pauseVoice("New conversation")
+        pauseVoice("New conversation", false)
         conversation = UUID.randomUUID().toString()
         prefs.edit().putString("conversation", conversation).apply()
         if (clear) { history = emptyList(); prefs.edit().remove("messages").apply(); mutable.value = state.value.copy(lines = emptyList(), conversations = emptyList(), conversationId = conversation) }

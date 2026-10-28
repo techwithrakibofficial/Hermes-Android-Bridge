@@ -7,14 +7,14 @@ public final class VoiceTurnGateTest {
         VoiceTurnGate gate = new VoiceTurnGate();
         long first = gate.listen();
         check(first > 0, "user start accepted");
-        check(gate.listen() == -1, "double tap cannot overlap recognizers");
+        check(gate.listen() == -1 && !gate.acceptsMicTap(), "double tap cannot overlap recognizers");
         check(!gate.finalResult(first - 1), "old recognition callback ignored");
         check(gate.finalResult(first), "one final recognized turn accepted");
         check(!gate.finalResult(first), "duplicate final does not submit twice");
-        check(gate.listen() == -1, "no listening while request is running");
+        check(gate.listen() == -1 && !gate.acceptsMicTap(), "no listening while request is running");
         gate.setAutomatic(true);
         check(gate.speak(first), "reply begins speech");
-        check(gate.listen() == -1, "no mic while speaker is active");
+        check(gate.listen() == -1 && gate.acceptsMicTap(), "speaker blocks automatic listen but allows explicit interruption");
         check(gate.speechDone(first, true), "successful opted-in turn can rearm once");
         check(!gate.speechDone(first, true), "duplicate TTS callback cannot rearm twice");
         long second = gate.listen();

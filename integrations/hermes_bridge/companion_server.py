@@ -327,6 +327,9 @@ class Manager:
 
     def _run(self, job, text):
         try:
+            saved_session = self.journal.session(job["conversation_id"])
+            if self.peer and len(self.peer.known) >= 5 and saved_session not in self.peer.known:
+                self.peer.close()  # Bound loaded agent contexts; Hermes persists sessions for restore.
             if not self.peer or self.peer.closed or self.peer.process.poll() is not None:
                 candidate = self.peer_factory(self.command, self._update, self._permission)
                 with self.lock:
@@ -335,18 +338,25 @@ class Manager:
                         candidate.close()
                         raise SafeError("cancelled")
                 candidate.initialize()
-            session = self.journal.session(job["conversation_id"])
+            session = saved_session
+            model_state = None
             if session and session not in self.peer.known:
                 restored = self.peer.call("session/load", {"sessionId": session, "cwd": self.workspace, "mcpServers": []})
+                model_state = (restored or {}).get("models")
                 if restored is None:
                     raise SafeError("session_restore_failed_start_new_chat")
             elif not session:
                 value = self.peer.call("session/new", {"cwd": self.workspace, "mcpServers": []})
+                model_state = value.get("models")
                 session = value["sessionId"]
                 self.journal.session(job["conversation_id"], session)
             self.peer.known.add(session)
             with self.lock:
                 self.session = session
+                if not hasattr(self.peer, "session_models"): self.peer.session_models = {}
+                if isinstance(model_state, dict): self.peer.session_models[session] = safe_text(model_state.get("currentModelId", self.model_label), 150)
+                self.model_label = self.peer.session_models.get(session, self.model_label)
+                job["model"] = self.model_label
                 self.cancel_started = None
                 if job["state"] == "cancelling":
                     raise SafeError("cancelled")

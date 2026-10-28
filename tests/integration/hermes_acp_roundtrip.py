@@ -69,6 +69,18 @@ def main():
                 print("Actual Hermes integration failed:",job["state"],job.get("error"),"tool offered",Endpoint.tool_offered,"bridge calls",Endpoint.bridge_calls)
                 if manager.peer: print(manager.peer.stderr[-9000:]) # Test-only keys and localhost fixtures only.
                 raise AssertionError("actual Hermes/ACP/MCP tool roundtrip")
+            saved_session=journal.session(request["conversation_id"])
+            manager.peer.close();manager.peer=None
+            resumed=dict(request,request_id="c"*32,text="Continue this conversation. Report readiness without changing anything.")
+            manager.submit(resumed)
+            until=time.monotonic()+180
+            while manager.worker_running and time.monotonic()<until:time.sleep(.2)
+            resumed_job=manager.get(resumed["request_id"])
+            if resumed_job["state"]!="completed" or journal.session(request["conversation_id"])!=saved_session:
+                print("Actual session restore failed:",resumed_job)
+                if manager.peer:print(manager.peer.stderr[-9000:])
+                raise AssertionError("Hermes persistent session restore")
+            print("PASS: actual Hermes ACP process restart restored the same persisted session; no request replay.")
             print("PASS: actual Hermes v2026.5.29.2 ACP prompt -> configured MCP android_bridge_status -> fake Android -> reply. No real inference or device action.")
         finally:
             manager.close()
