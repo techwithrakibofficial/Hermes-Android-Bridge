@@ -42,4 +42,4 @@ Default debug keys can differ between builds. If Android rejects the update cert
 - Plain HTTP is confined to local loopback. This is not protection against root, debugger access, compromised apps/OS or stolen clipboard/shell contents.
 
 ## Verification status
-Protocol tests run on a JVM with a fake Android handler. They cannot verify actual Home/Back effects, Android background behavior, or PRoot/Hermes integration. Report status response, Home/Back screen behavior and Stop behavior without the token.
+20 protocol checks passed in CI on a JVM with a fake Android handler (run 40608250521). APK compile/lint and publication also passed. They cannot verify actual Home/Back effects, Android background behavior, or PRoot/Hermes integration. Report status response, Home/Back screen behavior and Stop behavior without the token.
