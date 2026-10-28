@@ -50,3 +50,11 @@ correctly. This adds a user-confirmed real-app navigation/information-reading
 workflow, not an independently observed screenshot or proof every app action
 works. No code/config change made. Personal social-account figures are not saved
 in this repository checkpoint.
+
+## Proactive Telegram scheduling result
+User received one-shot bangla-check-in-test output. User then provided two
+scheduled recurring-job results: morning01076cf41bca at05:00 UTC/11:00 Dhaka;
+evening740de51d6d08 at14:00 UTC/20:00 Dhaka. Both pin openrouter/free via openrouter
+and deliver to Telegram home. No duplicates reported. First recurring delivery
+and pause behavior remain unverified. Model-backed jobs depend on foreground
+gateway/process availability and provider quota. No new code or build required.

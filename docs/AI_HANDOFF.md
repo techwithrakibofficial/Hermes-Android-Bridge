@@ -228,16 +228,30 @@ did not match the requested sentence. Do not claim natural companion style teste
 Home-channel setup and one scheduled-delivery path are now user-confirmed.
 No regular11:00/20:00 daily job IDs or next-run results provided yet.
 
+## Recurring check-ins — confirmed by supplied cron result
+User supplied recurring-job confirmation:
+- bangla-check-in-morning, ID01076cf41bca, cron0 5 * * * (UTC), equivalent
+  daily11:00 Asia/Dhaka; next run reported2026-10-29 11:00 Bangladesh time.
+- bangla-check-in-evening, ID740de51d6d08, cron0 14 * * * (UTC), equivalent
+  daily20:00 Asia/Dhaka; next run reported2026-10-28 20:00 Bangladesh time.
+Both report scheduled/recurring, model openrouter/free, provider openrouter,
+delivery Telegram home chat. Bot reports no duplicates and test jobb32a97a7322d
+absent from its list. Do not assume archived test data was deleted: no independent
+storage inspection or include-disabled listing was provided. Actual daily
+deliveries have not yet been reported; the prior one-shot test was received.
+The stop/pause behavior was instructed/reported, not exercised on these jobs.
+This is user-supplied cron evidence, not a direct inspection from this assistant.
+
 ## Single next action
-Ask Hermes to inspect test job b32a97a7322d and ensure no unintended repeating test
-remains active, then list existing relevant home-chat jobs and create/reuse at most
-two daily check-ins at11:00 and20:00 Asia/Dhaka. Explicitly pin model openrouter/free
-and provider openrouter; verify effective scheduler timezone/conversion without
-guessing next-run times. Deliver only to the verified Telegram home chat. Prompts
-should request one or two natural Bengali sentences rather than verbose awkward
-self-description. Repeating daily jobs must not inherit the test's repeat=1.
-Return actual IDs/schedule/next run and pause on user's stop request. Do not claim
-daily jobs active until confirmed or any real telephone calling/mic feature added.
+Leave existing jobs in place; no repeat creation or setup needed. Gateway/Termux
+must remain running and inference service/quota available for model-backed jobs.
+Confirm receipt of the first regular scheduled message, then record its job ID
+and user-reported delivery time without claiming perfect uptime or unlimited use.
+If missing, inspect that specific job's last execution/delivery status before
+recreating jobs. For stop requests pause only these two companion jobs.
+Core bridge + one real Facebook workflow + one-shot proactive delivery are
+user-verified; first daily delivery, per-app sending/calling and native companion
+mic/chat remain outstanding. Future product work must preserve this working setup.
 
 ## Still unimplemented or unverified
 - No live carrier/WhatsApp call audio, Telecom dialer role, incoming-call answer/
@@ -245,8 +259,9 @@ daily jobs active until confirmed or any real telephone calling/mic feature adde
   or standalone two-way companion chat/voice UI. Current chat remains Telegram.
 - Generic nodes can operate app controls, but per-app recipient/send/call and
   repair workflows need individual real-phone tests. Custom/protected UI may fail.
-- Proactive Telegram check-ins use existing Hermes cron tools and need verified
-  timezone/private-chat delivery; no jobs configured or delivery tested here.
+- Proactive Telegram one-shot delivery was received; two daily jobs are reported
+  scheduled (IDs above). First recurring delivery and stop/pause behavior remain
+  untested. No real incoming telephone-call capability is implied.
 - Feminine voice preference is profile-level; English/Bengali speech is reported
   audible, but chosen gender/clarity are not independently confirmed. Installed
   voices must be previewed/selected; standard Voice API has no portable gender field.
