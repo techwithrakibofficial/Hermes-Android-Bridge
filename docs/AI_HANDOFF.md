@@ -188,15 +188,33 @@ to this assistant. Do not generalize to all Facebook operations or every app.
 Personal social-account counts are not part of this repository checkpoint.
 No code/config/APK change or provider migration was needed for this success.
 
+## Latest provider blocker — credit allowance now blocks all ordinary prompts
+User reports402/openrouter_credits at saved output cap4096, plus historical errors
+that input prompt exceeds allowed affordable prompt size. This is not just the
+prior in-flight cooldown and not a bridge/APK regression. Lowering output cap
+again alone cannot guarantee recovery. Do not replay prompts or claim balance
+is exactly zero. Current exact model/account allowance not inspected here.
+Home channel was confirmed by user message gateway.set_home.success. Proposed
+test/recurring cron jobs have no confirmed IDs or delivered messages; creation
+may be incomplete and must not be assumed. List/reuse existing jobs before any
+later scheduling retry to avoid duplicates.
+
+Official OpenRouter docs verified2026-10-28: openrouter/free routes to free models
+and filters for required features such as tools. Free usage has daily/minute
+caps; negative credit balance can still block free routes. No unlimited-use claim.
+Exact Hermes v2026.5.29.2 gateway/run.py handles /model without LLM generation;
+supports provider:model, session-only switching, and --global persistence.
+The session-only trial changes no saved default. Keep existing key/MCP/pairing.
+
 ## Single next action
-Continue ordinary user-directed phone tasks in natural language with fresh-screen
-verification and read-only settling after accepted actions. No further reinstall,
-pairing or patch needed for the working Facebook workflow. Respect specific
-OpenRouter cooldown if it recurs and avoid replaying completed mutations.
-Earlier battery-page inspection reached its target but no battery figures were
-supplied, so that report remains incomplete. Send/call/mic/live-call/proactive
-features retain the documented unverified/unimplemented boundaries. Do not
-trigger third-party messaging, calling or new schedules from this status report.
+In Telegram send /new FIRST to clear the long failed conversation, then
+/model openrouter:openrouter/free (no --global yet), inspect confirmation, and
+request one short text-only reply. Source semantics verified, actual account/free
+inference not tested. Do not send /new after session-only switch without checking
+override retention. On success, test one read-only bridge call, then consider
+--global persistence and future-job routing after confirmation. On failure, use
+the actual error rather than another guessed token-cap change. No APK update,
+reinstall, credential reset, new account or paid purchase selected.
 
 ## Still unimplemented or unverified
 - No live carrier/WhatsApp call audio, Telecom dialer role, incoming-call answer/

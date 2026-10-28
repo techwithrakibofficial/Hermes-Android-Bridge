@@ -46,3 +46,36 @@ credits or guarantee future requests. No paid upgrade was selected.
 
 The short-reply API test after restart is required before calling this resolved.
 Never paste .env, config backups or full credential-bearing gateway logs into chat.
+
+## Later credit exhaustion at4096 and input affordability limits
+A subsequent user report has openrouter_credits failures even at4096 and includes
+prompt affordability failures. The earlier cap was a temporary cost reduction,
+not permanent credit recovery. /sethome succeeded but no cron IDs/test delivery
+are confirmed. Ordinary model requests are now blocked; Android bridge remains
+separately verified.
+
+For the user's free-only preference, verify a session-only free route before
+touching saved model configuration. Exact v2026.5.29.2 gateway source supports:
+
+1. /new
+2. /model openrouter:openrouter/free
+3. Inspect model/provider confirmation, then one short text-only reply.
+
+The switch command is handled by the gateway, not an ordinary LLM inference turn.
+Session-only trial is not a persisted default for future sessions/cron. --global
+exists but has not been selected or applied at this checkpoint. Do not claim the
+route works until real reply and tool-use tests succeed. Changing models may
+change latency/quality; the free router chooses among available compatible models.
+
+Official free router: https://openrouter.ai/docs/guides/routing/routers/free-router
+Official limits: https://openrouter.ai/docs/api_reference/limits
+Pricing: https://openrouter.ai/pricing
+Free models have request caps; current published base allowance is50/day and
+20/minute (higher daily tiers depend on prior purchases). Failed attempts can
+consume quota; one multi-step phone task requires several requests. Negative
+account balance or other limits can block even free requests. Do not create extra
+accounts/keys to evade caps, promise unlimited free inference or buy credits.
+Model/API keys and account financial data must remain private.
+
+After recovery, list existing cron jobs before repeating the check-in scheduling
+prompt. This avoids duplicates if any prior call partially created jobs.
