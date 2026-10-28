@@ -140,6 +140,31 @@ class CompanionTests(unittest.TestCase):
         self.assertEqual(server.provider_error("Error: 429 rate limit"),"provider_rate_limit")
         self.assertNotIn("sk-abcdefghijklmno",server.safe_text("key sk-abcdefghijklmno"))
 
+    def test_late_permission_cannot_undo_stop(self):
+        payload,_=self.submit()
+        self.manager.peer.notify=lambda method,params:self.manager.peer.calls.append(method)
+        self.manager.cancel(payload["request_id"])
+        self.manager._permission(99,{"sessionId":"session-one","toolCall":{"title":"Late approval"},"options":[{"optionId":"yes","kind":"allow_once"}]})
+        self.assertEqual(self.manager.active["state"],"cancelling")
+        self.assertIsNone(self.manager.active["approval"])
+        self.assertIn(("permission",99,None),self.manager.peer.calls)
+        self.manager.peer.finish()
+        wait_for(lambda:not self.manager.worker_running)
+        self.assertEqual(self.manager.get(payload["request_id"])["state"],"cancelled")
+
+    def test_restart_keeps_nonce_tombstone_and_never_executes_again(self):
+        import hashlib
+        payload=self.payload(); path=Path(self.temp.name)/"restart/jobs.sqlite"
+        journal=server.Journal(path)
+        fingerprint=hashlib.sha256(json.dumps(payload,sort_keys=True).encode()).hexdigest()
+        journal.save({"id":payload["request_id"],"state":"running","reply":"","approval":None},fingerprint)
+        journal.close(); journal=server.Journal(path)
+        restarted=server.Manager(journal,lambda:TOKEN,lambda:True,[],Path(self.temp.name)/"restart-work",FakePeer)
+        try:
+            self.assertEqual(restarted.submit(payload)["state"],"interrupted")
+            self.assertIsNone(restarted.peer)
+        finally: restarted.close();journal.close()
+
 
 class ACPWireTests(unittest.TestCase):
     def test_real_subprocess_initialize_update_permission_cancel(self):

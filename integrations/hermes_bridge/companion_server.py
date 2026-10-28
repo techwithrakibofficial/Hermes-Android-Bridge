@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import re
 import signal
+import shutil
 import sqlite3
 import subprocess
 import sys
@@ -285,7 +286,7 @@ class Manager:
 
     def _permission(self, request_id, params):
         with self.lock:
-            if not self.active or self.active["state"] in TERMINAL or params.get("sessionId") != self.session:
+            if not self.active or self.active["state"] in TERMINAL or self.active["state"] == "cancelling" or params.get("sessionId") != self.session:
                 if self.peer:
                     self.peer.permission(request_id)
                 return
@@ -503,6 +504,7 @@ def main():
     os.umask(0o077)
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--doctor", action="store_true")
+    parser.add_argument("--with-gateway", action="store_true", help="Run the existing Telegram gateway alongside companion in this terminal")
     args = parser.parse_args()
     from bridge_mcp import BridgeClient
     client = BridgeClient()
@@ -529,6 +531,17 @@ def main():
     except Exception:
         pass
     server = Server(("127.0.0.1", PORT), manager, client.read_token)
+    gateway = None
+    if args.with_gateway:
+        executable = shutil.which("hermes")
+        if not executable:
+            raise SafeError("existing_hermes_not_found")
+        gateway = subprocess.Popen([sys.executable, executable, "gateway", "run"], stdin=subprocess.DEVNULL, start_new_session=True)
+        def watch_gateway():
+            gateway.wait()
+            print("Existing gateway process exited; stopping this combined companion launcher.", flush=True)
+            server.shutdown()
+        threading.Thread(target=watch_gateway, daemon=True).start()
     print("Hermes native companion listening on 127.0.0.1:18766. Keep this Termux session running.", flush=True)
     try:
         server.serve_forever(poll_interval=0.5)
@@ -537,6 +550,13 @@ def main():
     finally:
         server.server_close()
         manager.close()
+        if gateway:
+            try:
+                os.killpg(gateway.pid, signal.SIGTERM)
+                gateway.wait(timeout=5)
+            except (OSError, subprocess.TimeoutExpired):
+                try: os.killpg(gateway.pid, signal.SIGKILL)
+                except OSError: pass
 
 
 if __name__ == "__main__":

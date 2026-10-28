@@ -1,0 +1,28 @@
+name: Test exact Hermes companion integration
+on:
+  push:
+    branches: [main]
+    paths: ['integrations/hermes_bridge/companion_server.py', 'tests/integration/**', '.github/workflows/test-hermes-companion.yml']
+  pull_request:
+    paths: ['integrations/hermes_bridge/companion_server.py', 'tests/integration/**', '.github/workflows/test-hermes-companion.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  installed-hermes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: NousResearch/hermes-agent
+          ref: v2026.5.29.2
+          path: .ci-hermes
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - name: Install exact Hermes source plus its ACP/MCP extras
+        run: python -m pip install './.ci-hermes[acp,mcp]'
+      - name: Exercise actual Hermes with local LLM and Android fixtures
+        run: python tests/integration/hermes_acp_roundtrip.py
