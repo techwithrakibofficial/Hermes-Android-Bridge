@@ -179,15 +179,24 @@ reinstall APK or claim the account balance is zero. Smaller output/history may
 reduce estimated cost in future, but no additional limit/model change made here.
 No claim cooldown has already solved the next request.
 
+## Latest real-app success — Facebook
+User independently tried a normal-language instruction to open Facebook and
+inspect total friends. Bot reported reading Friends > Your friends and user
+explicitly says the task worked correctly. Record user-confirmed Facebook
+navigation and visible-information extraction; no raw tree/screenshot supplied
+to this assistant. Do not generalize to all Facebook operations or every app.
+Personal social-account counts are not part of this repository checkpoint.
+No code/config/APK change or provider migration was needed for this success.
+
 ## Single next action
-Pause model commands until at least120 seconds after the error and ongoing
-requests have settled. Preserve the existing Settings task/page; opening Settings
-again or replaying search/scroll can lose progress or repeat actions. Ask user for
-a screenshot of that existing Battery usage page to verify/read the actual values
-without another OpenRouter request. If later resuming the bot, use a bounded
-read-only observation of the restored Settings task rather than rerunning the
-whole action sequence. Navigational progress is reported successful; battery
-assessment is not yet complete. Keep current working APK/pairing/provider config.
+Continue ordinary user-directed phone tasks in natural language with fresh-screen
+verification and read-only settling after accepted actions. No further reinstall,
+pairing or patch needed for the working Facebook workflow. Respect specific
+OpenRouter cooldown if it recurs and avoid replaying completed mutations.
+Earlier battery-page inspection reached its target but no battery figures were
+supplied, so that report remains incomplete. Send/call/mic/live-call/proactive
+features retain the documented unverified/unimplemented boundaries. Do not
+trigger third-party messaging, calling or new schedules from this status report.
 
 ## Still unimplemented or unverified
 - No live carrier/WhatsApp call audio, Telecom dialer role, incoming-call answer/

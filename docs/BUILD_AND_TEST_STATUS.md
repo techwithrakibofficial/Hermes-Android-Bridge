@@ -42,3 +42,11 @@ openrouter_in_flight_budget/in_flight_budget_exhausted with Retry-After120s, a
 different blocker from the earlier oversized-output credit preflight. No code,
 config, APK or credential change made; cooldown and existing-page verification
 come first. Task battery report remains pending.
+
+## User-confirmed Facebook workflow
+User issued a normal-language request to open Facebook and inspect friends.
+Bot reported reading Friends > Your friends; user explicitly confirms it worked
+correctly. This adds a user-confirmed real-app navigation/information-reading
+workflow, not an independently observed screenshot or proof every app action
+works. No code/config change made. Personal social-account figures are not saved
+in this repository checkpoint.
