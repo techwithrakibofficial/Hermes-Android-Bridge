@@ -1,60 +1,47 @@
-# Build and test status —0.4.2
+# Build and test checkpoint — 2026-10-28
 
-- Code0291f89fc4e9b92435a111a7dcb5f685383699c0.
-- Android run40652609851: compile/lint and publication dev-16 PASS.
-  46 loopback protocol +22 catalog +22 snapshot-guard checks =90 JVM assertions.
-  Providers, UI contexts and Android action handlers in fixtures are fabricated.
-- Python adapter source unchanged; prior run40648006478 passed61 checks each on
-  Python3.12/3.14. No new Python run was required/claimed for this Android-only fix.
-- Local execution host disconnected during implementation; GitHub Actions was
-  used for verification. Code persisted through GitHub connector.
-- Phone0.4.1:110-app catalog, remote engine ready, exact-package open and screen
-  reads confirmed by user-supplied results. Read Telegram25/Bridge41-44 nodes.
-- Small reply and read tools resumed after output-cap instructions following
-  OpenRouter402. No promise of unlimited free inference or future credit balance.
-- Safe UI workflow: repeated stale_snapshot on fresh scroll targets. No scroll,
-  click/type, Draft/Counter or audible speech confirmed.0.4.2 repair on phone pending.
+## Published native companion0.5.0
 
-https://github.com/techwithrakibofficial/Hermes-Android-Bridge/actions/runs/40652609851
-https://github.com/techwithrakibofficial/Hermes-Android-Bridge/releases/tag/dev-16
+- Source: `c1bdca0215d5386ff096cc6cc5591d900e0fb5a3`.
+- APK: [dev-20 / Hermes-Bridge-0.5.0.apk](https://github.com/techwithrakibofficial/Hermes-Android-Bridge/releases/download/dev-20/Hermes-Bridge-0.5.0.apk),9,469,614 bytes.
+- GitHub asset SHA256: `ed4ec5c67b2698261cf57ab9437fdb51da249a669fe5e4467efb92859b31ee9a`.
+- [Android build40678159006](https://github.com/techwithrakibofficial/Hermes-Android-Bridge/actions/runs/40678159006): successful compile/lint and publication.124 Java checks:46 loopback protocol,22 catalog,22 snapshot,34 voice lifecycle/chunks.
+- [Python40678159057](https://github.com/techwithrakibofficial/Hermes-Android-Bridge/actions/runs/40678159057):80 tests passed on each of3.12/3.14, with actual pinned ACP SDK0.9.0 installed. Local run without optional SDK skips its wire fixture; CI did not skip it.
+- [Exact Hermes40678159077](https://github.com/techwithrakibofficial/Hermes-Android-Bridge/actions/runs/40678159077): pinned NousResearch/hermes-agent tag `v2026.5.29.2`, actual ACP child and configured MCP tool calling with local LLM and fake Android. Confirmed same persisted session after child restart and no job replay. No real inference account or phone actions involved.
 
-## Latest0.4.2 user-supplied phone report
-Pinned button click opened Hermes control test. Bengali text entry was confirmed
-by a subsequent Draft: পরীক্ষা সফল read. Counter click accepted:true but read
-Counter:0; increment remains unresolved, no automatic retry made. Need the user's
-visible value in the existing activity before assuming latency/cache/targeting or
-patching. Scroll and audible speech still have no confirmed successful result.
+## Coverage and limits
 
-## Subsequent visible/audio confirmation
-User personally inspected the SAME test activity: Draft পরীক্ষা সফল, Counter1.
-This supersedes the earlier unresolved counter value0 read; no second click was
-requested. Counter increment completed, with delayed observation/update apparent
-but exact cause unknown. Use read-only settling/reobservation, not blind retries.
-User confirmed English speech audible and then Bengali speech audible. Pronunciation
-quality/feminine sound, mic input, real-app scrolling/sending/calling and live call
-audio remain unverified or unimplemented as documented. No new code/build needed.
+Protocol tests use real localhost sockets with bounded/authenticated HTTP. Python
+fixtures cover pairing, Host/Origin/body limits, request idempotence/conflict,
+single task, approval/cancel, persisted interrupted jobs, provider safe errors,
+bridge revocation and actual ACP SDK wire flow. Java tests cover state transitions,
+double start, duplicate/late callback, silence/error pause, Stop/rearm and speech
+chunk boundaries. Compiler/lint validates Android source/API usage.
 
-## Real Settings workflow and new provider error
-User reports the read-only Settings battery workflow reached the correct page.
-No final battery figures/highest-consuming app supplied. Tool invocation list
-alone is not evidence of each individual operation. Workflow paused on402
-openrouter_in_flight_budget/in_flight_budget_exhausted with Retry-After120s, a
-different blocker from the earlier oversized-output credit preflight. No code,
-config, APK or credential change made; cooldown and existing-page verification
-come first. Task battery report remains pending.
+None of these fixtures proves OEM SpeechRecognizer callbacks, Bengali offline
+model availability, audio focus behavior on TECNO, foreground/battery survival,
+actual Play Store/TTS engine voice quality, live provider routing or arbitrary app
+UI reliability. The phone acceptance matrix is in [UPGRADE_0_5.md](UPGRADE_0_5.md).
 
-## User-confirmed Facebook workflow
-User issued a normal-language request to open Facebook and inspect friends.
-Bot reported reading Friends > Your friends; user explicitly confirms it worked
-correctly. This adds a user-confirmed real-app navigation/information-reading
-workflow, not an independently observed screenshot or proof every app action
-works. No code/config change made. Personal social-account figures are not saved
-in this repository checkpoint.
+## Actual prior phone evidence
 
-## Proactive Telegram scheduling result
-User received one-shot bangla-check-in-test output. User then provided two
-scheduled recurring-job results: morning01076cf41bca at05:00 UTC/11:00 Dhaka;
-evening740de51d6d08 at14:00 UTC/20:00 Dhaka. Both pin openrouter/free via openrouter
-and deliver to Telegram home. No duplicates reported. First recurring delivery
-and pause behavior remain unverified. Model-backed jobs depend on foreground
-gateway/process availability and provider quota. No new code or build required.
+User-reported0.4.x: working Ubuntu private MCP connection; app catalog110 entries;
+exact-package opening and screen reads; safe test activity Bengali draft and
+counter1 after reobservation; audible English/Bengali speech; successful read-only
+Facebook navigation. Settings navigation reached intended page, final battery
+report was not supplied. Current phone installed version before upgrade0.4.2.
+No new0.5 microphone/background/approval result has been reported yet.
+
+Telegram home was set. One-shot check-in delivered. Two daily jobs were reported
+scheduled at11:00/20:00 Asia/Dhaka using openrouter/free. First actual recurring
+run is unverified. Model switch plus successful bridge tools was reported; free
+quota is bounded and no unlimited service promise is made.
+
+## Reproducibility and signing
+
+GitHub Actions uses JDK17, Gradle8.11.1, Android SDK35/build-tools35.0.0.
+Private installer is pinned with SHA256; backend pin is recorded in upgrade guide.
+Existing19-tool adapter remains unchanged. SDK installation is confined to the
+existing private venv; no system pip override/Hermes reinstall is part of0.5 setup.
+Cached debug signing is development-only; key eviction/update mismatch remains a
+known packaging risk. Stable release signing is a future separate milestone.

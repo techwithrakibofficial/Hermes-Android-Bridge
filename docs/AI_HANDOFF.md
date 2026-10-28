@@ -1,277 +1,142 @@
-# CURRENT HANDOFF — Hermes Android Bridge
-Updated2026-10-28. This file supersedes older appended handoff notes.
+# CURRENT HANDOFF — Hermes Android Bridge / Companion
 
-## Goal and invariants
-Personal phone-operating companion: Bengali conversation, warm feminine persona,
-planning/coding, opt-in proactive contact, app/settings workflows. Free phone-only
-development/GitHub Actions builds. No root/ADB/Developer Options/EMI bypass.
-Preserve existing Hermes/provider/Telegram/pairing/memory; no reinstall/reset.
-User asks for maximum possible features and accepts risk. This does not establish
-any untested phone capability or override Android/provider policies.
+Updated2026-10-28. Read this before changes. Preserve working state; do not restart
+setup or claim phone success from fixture results. No root/ADB/Developer Options/
+EMI bypass. Free, phone-only development through GitHub Actions.
 
-## Confirmed existing phone runtime
-- Native Termux PRoot alias ubuntu. Hermes /usr/local/bin/hermes v0.15.2
-  (2026.5.29.2); Python3.14.4, OpenAI SDK2.24.0; home/root/.hermes.
-- Private MCP SDK1.26.0 installed successfully, actual Hermes discovery of3 tools
-  passed. Ubuntu authenticated bridge pairing passed. Telegram reply recovered.
-- User confirmed All done after Telegram status/Home test; direct Back and bridge
-  Stop were explicitly confirmed. Voice speed and selection were user-accepted.
-- User now says the0.3 functionality works; no raw Settings/app execution output.
-- HASS_TOKEN previously force-enabled HomeAssistant despite config.enabled=false;
-  recovery has resolved it. Do not repeat recovery or change Telegram credentials.
-- D-Bus service-status error is expected in PRoot; use foreground gateway.
+## Exact checkpoint / single next action
 
-## Required future startup
-proot-distro login ubuntu -- /root/.local/share/hermes-android-bridge/hermes-with-android gateway run
-Do not replace this with the global hermes shebang: it cannot see the private SDK.
-Private token: ~/.config/hermes-android-bridge/connection.json mode600.
-Fresh app bridge Start rotates token; copy export into native Termux alone, then
-forward HERMES_BRIDGE_TOKEN to the pinned Ubuntu setup. Keep token/.env private.
+0.5.0 native companion, private backend and installer are implemented, committed
+and CI-tested. Release **dev-20** source
+`c1bdca0215d5386ff096cc6cc5591d900e0fb5a3` is published.
+**Next: install the0.5.0 APK on the user's TECNO, then follow UPGRADE_0_5.md to
+pair and run the combined native+Telegram launcher. Start acceptance with one
+text-only reply before mic or actions.** New0.5 phone testing has not occurred.
 
-## Last released and verified baseline
-0.3.0 APK dev-11, code b86c29673939df243f113832efe42af92c71c64b.
-Android run40637536913: compile/lint,30 fake-handler socket checks, publication PASS.
-Python run40637536937:51 tests Python3.12/3.14 PASS.
-https://github.com/techwithrakibofficial/Hermes-Android-Bridge/releases/tag/dev-11
+[Download](https://github.com/techwithrakibofficial/Hermes-Android-Bridge/releases/download/dev-20/Hermes-Bridge-0.5.0.apk)
+[Phone guide + exact pinned command](UPGRADE_0_5.md)
+[Master plan](MASTER_PLAN.md)
+[Build evidence](BUILD_AND_TEST_STATUS.md)
 
-## Current0.4 checkpoint
-Source implemented: explicit per-session screen-control switch; bounded UI tree,
-password-control omission; stale snapshot/node checking; click/long-click/scroll/
-replace text; installed launchable-app discovery/open package; dialer intent;
-remote speech with saved voice, stop speech, recents/notification shade/Quick
-Settings/basic device state.19 MCP tools. Safe control-test activity added.
-Optional --companion setup flag adds a backed-up marked block to existing SOUL.md;
-other personality content preserved. No cron job is created during install.
-Read docs/COMPANION_0_4.md for full behavior, limits and phone acceptance tests.
+APK SHA256 `ed4ec5c67b2698261cf57ab9437fdb51da249a669fe5e4467efb92859b31ee9a`.
+Setup helper at release source SHA256
+`b7f18b3e8c42a5dae33511078b8d924dc21f038021d7b4c49ed8ded0947e70cb`.
+It pins backend commit `3fad2328dea77584be2337744623ae5d3fe57d56`, SHA256
+`7471d22ebf140e2f88b5022c9f65f26a198a422692827dedb2f3b3a114b3c35f`.
+Future doc-only commits do not alter this release or installer pin.
 
-Local59 Python tests passed (stdlib/fake HTTP/temp files). Python3.12/3.14 CI
-run40642075403 passed59 each. Android run40642075456 passed compile/lint,46
-fake-handler real-socket checks and publication as dev-12. APK9,354,144 bytes;
-SHA2562671a19802bd77954172444eaef79c099e7655841cbab6c7315ca9321ac59fed.
-Actual0.4 phone actions remain pending. Do not
-claim broad messaging/call automation is phone-tested or a final universal agent.
+## Preserved environment (confirmed)
 
-## 0.4 phone evidence and current repair
-User installed0.4, enabled screen control and ran pinned updater; gateway banner
-shown. Telegram actual tool output: bridge ready/version0.4.0 and device state
-TECNO KM9, Android16/SDK36, screen_control_enabled true, voice_ready false. These
-two read tools work. They do NOT prove screen/click/type or voice functionality.
-The safe acceptance workflow stopped at android_list_apps with generic HTTP503;
-subsequent bridge status remained ready. No app-open/screen/click/text ran.
-No home channel set was also reported; /sethome may be used in the user's verified
-private Telegram chat for later delivery. It is not this listing failure.
+- Native Termux → proot-distro `ubuntu`. `/usr/local/bin/hermes` v0.15.2
+  `(2026.5.29.2)`, Python3.14.4, OpenAI SDK2.24.0; Hermes home `/root/.hermes`.
+- Exact upstream source tag `v2026.5.29.2`. Private Python
+  `/root/.local/share/hermes-android-bridge/mcp-env/bin/python`, MCP SDK1.26.0.
+  Avoid global pip/--break-system-packages, Hermes upgrade or credential reset.
+- Telegram bot configured/paired and responding. Old gateway service status uses
+  systemd user bus unavailable in PRoot; use foreground gateway, not service fix.
+- Home Assistant was unintentionally enabled via HASS_TOKEN. Config-only enabled
+  false did not stop it; later gateway output had no HA errors and Telegram
+  responded. Do not reenable or reset .env; token values must never be printed.
+- Old launcher: `proot-distro login ubuntu -- /root/.local/share/hermes-android-bridge/hermes-with-android gateway run`.
+- TECNO KM9 Android16 SDK36; prior installed Bridge0.4.2. Same applicationId
+  `io.github.techwithrakibofficial.hermesbridge`;0.5 versionCode9, minAPI26.
 
-Confirmed code defect: full PackageManager query and label-loading comparator
-ran on UI thread under1.2s dispatch wait; loadLabel repeated during sorting.
-Likely cause of reported503, not proven without phone logs. No claim of missing
-permission, locked screen or EMI cause.0.4.1 moves catalog to one background
-loader, caps and loads labels once, shares pending work and caches30s. Read wait
-2.8s returns apps_loading if unfinished. Exact-package open no longer queries
-all installed apps. Specific main-dispatch codes and voice_status/catalog state
-added to device diagnostics. Also confirmed remote VoiceOutput objects were
-constructed without calling refresh/startEngine; service now starts engine on
-creation/reload/fallback. MainActivity's manual voice had its own onResume refresh,
-explaining why its earlier test could work while remote voice_ready stayed false.
-Screen observation has a separate3.5s dispatch wait; mutation wait stays1.2s.
-Existing19-tool adapter remains compatible. Actual updated TTS remains untested.
+## Pairing and Android tools
 
-##0.4.1 published evidence
-Code cbe205a130d1d713a2910b812238a265296cd505; release dev-15 (not dev-14,
-which predates remote-TTS initialization fix). Android run40648224661 passed
-compile/lint,46 protocol checks and22 catalog checks with fake providers/handlers.
-Python run40648006478 passed61 tests each on3.12/3.14 (adapter unchanged by final
-app-only TTS patch). APK9,354,144 bytes;
-SHA2567ae075a2c17f5ab7ae65f8344a0199eeca843a5258df48cc18c31445f366cbd5.
-Actual updated TECNO app-list/screen/click/type/speech results remain pending.
+User-started Android bridge `127.0.0.1:18765`; 43-char256-bit session token.
+App exports HERMES_BRIDGE_TOKEN/URL; paste export alone at native Termux prompt.
+Never log/share/commit it. Stop/unbind/death revokes pairing. Private Ubuntu
+connection file `~/.config/hermes-android-bridge/connection.json` file600/dir700.
+MCP rereads it on requests. Bridge-only restart needs fresh export/pairing.
 
-## Latest phone evidence —0.4.1
-User pasted Telegram tool results after the0.4.1 upgrade: status ready/version0.4.1;
-TECNO KM9 Android16/SDK36; screen_control_enabled true; voice_ready true;
-voice_status "Voice ready. Test করে শুনুন।", voice_language en-US;
-app_catalog_state ready; last_dispatch_error none. One android_list_apps call
-returned110 launchable apps, truncated false, label_fallbacks0. No app opened or
-setting changed. This confirms those read tools and catalog on the actual phone,
-not independently observed screen actions or audible speech. This supersedes the
-prior app-list and remote-engine readiness blockers. Individual app labels alone
-are not evidence of an app's safety or behavior; no action on them is authorized.
-No Telegram home channel is set; /sethome in the verified private chat is optional
-for future scheduled delivery and unrelated to current bridge health.
+19 existing tools unchanged: status, home/back/settings/open_app, screen, click,
+long_click, scroll, set_text, list_apps, open_package, dial, speak, device_state,
+recents, notifications, quick_settings, stop_speech. Six aliases WhatsApp,
+Facebook, Messenger, Telegram, Chrome, Termux. Generic UI automation is not proof
+of every app workflow. Explicit screen-control opt-in; bounded120 nodes,
+password omission; snapshot60s/single-use with actual context/exact node check.
+No blind stale snapshot retry, no accepted==verified result assumption.
 
-## Latest blocker — OpenRouter output-credit preflight
-User's next safe UI test invoked open_package, screen and scroll several times,
-then failed at the model provider with HTTP402/openrouter_credits: requested output
-ceiling131072 exceeds current allowance. Tool names alone do not prove accepted
-or visible UI results. No Draft/Counter or click/type success was provided.
-Do not replay the whole action sequence blindly or reinstall the APK.
+##0.5 architecture and implemented features
 
-Exact Hermes upstream v2026.5.29.2 agent/agent_init.py reads model.max_tokens from
-config.yaml when no explicit constructor cap is supplied. OpenRouter official
-limits docs confirm output maximum contributes to estimated/preflight cost.
-Planned cap4096 with private config backup preserves current model/provider and
-other configuration. Temporary-file validation passed for dict and legacy string
-model formats; actual phone save and post-change API request remain untested.
-This does not add credits, change inference pricing or guarantee unlimited free use.
+- New native CompanionActivity launcher: chat/copy/New chat/History; Voice and
+  Connection tabs; saved TTS setup; progress; tool Allow once/Deny; Stop.
+  Existing MainActivity bridge setup and ControlTestActivity remain.
+- Android → private companion localhost18766 using current bridge pairing.
+  Inference keys remain in Ubuntu. Cleartext limited to localhost; strict
+  Host/Origin, bounded bodies, no CORS. No prompt/token logging.
+- Backend uses actual Hermes ACP stdio, optional `agent-client-protocol==0.9.0`
+  only in existing venv. No -z/--yolo blanket approval. Persistent SQLite request
+  IDs/fingerprints/job journal plus Hermes session IDs; no prompt replay after
+  restart/ambiguous network. Single task. Up to5 loaded conversations before
+  restarting own ACP child and restoring sessions. Thought updates not displayed.
+- User-started foreground task/mic service; local Stop immediately stops audio,
+  requests ACP cancellation;3s grace then only own child group terminated.
+  Already executed side effects cannot be undone. Pairing/live bridge monitored.
+- One recognizer, generation/final dedup guards,25s capture+8s finalization bounds,
+  mic off while TTS. Successful TTS completion may rearm once after500ms only if
+  automatic conversation opted-in. Silence/error/busy pauses; no retry/beep loop.
+- On-device recognition default; explicit network opt-in, no silent fallback.
+  Missing engine/language clearly pauses. OEM sounds cannot universally be muted.
+ 15min voice session; audio-focus/call guards; timed16min wake lock; nonsticky
+  foreground service with Stop; no boot/hidden microphone. TTS shares one speech
+  owner, unique callback IDs,1800-char chunks; long responses capped for audio.
+- Provider402/429 pauses safely; no provider inference retry storm by app.
+  Backend task timeout10min. Read-only reconnect polls bounded; preserves job ID.
+- Setup validates installed Hermes initialize without inference, installs pinned
+  backend with backups, saves `hermes-companion` (backend only) and
+  `hermes-companion-all` (backend + existing Telegram gateway). Default combined
+  launcher eliminates need for a new Termux session. Stop old foreground gateway
+  with Ctrl+C first; never launch duplicate Telegram pollers.
 
-## Latest phone evidence and0.4.2 repair
-After the output-cap instructions the user reported a successful short reply,
-then android_screen read org.telegram.messenger with25 nodes. Exact-package open
-then read Bridge with41/44 nodes. This confirms opening and read-only screen
-observation on the phone, not click/type/scroll success. Returning to Telegram
-between prompts changes the foreground package; combine open+inspect+act in one
-instruction and do not touch/switch apps while it runs.
-Latest combined test: Bridge opened; test button was below viewport. Three new
-snapshot+scroll attempts all returned stale_snapshot_observe_again. No scroll,
-click, draft, Counter:1 or audible TTS result is established. Stop repeating this
-old test before the repair.
-Confirmed overly broad code: every content/window/text/scroll event incremented
-one revision and invalidated the entire lease. Old generic error also covered
-wrong IDs/expiry, so the precise trigger on the phone remains uncertain.
-0.4.2 replaces event-counter rejection with fresh bounded visible-context hash,
-window/package and exact Android node identity/state checks before every UI
-mutation. Keeps60s/single-use/locked/password/supported-action checks; specific
-codes distinguish missing/mismatched/expired lease, changed window/context/node
-and validation timeout. Validation is bounded within a3.5s UI-node dispatch budget
-and a deadline check prevents starting a mutation after validation used its time.
-The test button is pinned outside the scrolling settings content so prior scroll
-position cannot hide it. Existing19-tool adapter is unchanged/compatible.
-The local execution environment disconnected during coding; sources were staged
-through GitHub. Code0291f89fc4e9b92435a111a7dcb5f685383699c0 passed Android
-run40652609851 compile/lint,46 real-socket protocol checks,22 catalog fixtures and
-22 new snapshot-guard fixtures. Published dev-16 APK0.4.2 (9,370,528 bytes),
-SHA256a50660a98349bc350bc7fb640e1bd0157516f6666bde4b6876683f1105227e14.
-No new local tests or actual0.4.2 phone execution claimed. Python adapter source
-is unchanged; prior61 checks on3.12/3.14 remain baseline, not rerun in this build.
+## Provider/cron continuity
 
-## Latest0.4.2 phone result — partial acceptance
-User pasted the bot's actual-result report: exact Bridge package open succeeded;
-fresh screen found pinned test button n4, click opened Hermes control test;
-editable field n7 accepted Bengali text and a later screen read Draft: পরীক্ষা সফল.
-Counter button n10 click returned accepted:true, but subsequent read still showed
-Counter:0. No error code, no blind re-click. This confirms reported test-activity
-navigation and Bengali text entry; it does NOT prove the counter click completed.
-No raw node payload, screenshot or user's independent visible counter observation
-has been supplied. UI/Accessibility update latency, stale child reads or targeting
-are hypotheses; no specific cause established and no new patch warranted yet.
+Paid model earlier `deepseek/deepseek-v4.1-flash-1017` failed OpenRouter402.
+Backed-up `model.max_tokens` reduced131072→4096, but remaining balance/prompt and
+in-flight budget still failed. User applied
+`/model openrouter/free --provider openrouter --global`, reported model saved
+labels + Done; later bridge tool response succeeded. Actual post-switch model ID
+not separately shown. No API access unlimited/expiry guarantee. Quota/routing
+can change; do not evade limits or flood retries.
 
-## User-visible confirmation superseding the unresolved counter
-User returned to the existing activity and personally reported title Hermes control
-test, Draft: পরীক্ষা সফল, Counter:1. Therefore the single increment completed;
-prior immediate Accessibility read reported0. The precise timing/cache mechanism
-is unproven. After accepted actions, allow settling and perform a read-only
-reobservation before considering any additional mutation. Do not blind re-click.
-User also confirmed the requested English android_speak was audible, then after
-Bengali-selection instructions confirmed Bengali speech was audible. This proves
-reported audio output, not a measured pronunciation quality, confirmed voice
-gender, microphone input, continuous conversation or phone-call audio.
+Telegram `/sethome` succeeded. One-shot `bangla-check-in-test` id`b32a97a7322d`
+delivered (awkward generated Bengali); no longer listed after one run.
+User supplied scheduled recurring jobs, no duplicates reported:
+- Morning `01076cf41bca`, `0 5 * * *` UTC →11:00 Asia/Dhaka.
+- Evening `740de51d6d08`, `0 14 * * *` UTC →20:00 Asia/Dhaka.
+Both modelopenrouter/free/provideropenrouter, Telegram home, repeatforever.
+**First recurring delivery remains unverified.** Do not create replacements.
 
-## Latest real Settings workflow — provider pacing blocker
-User asked read-only battery usage inspection. Bot invoked Settings opening,
-screen reads, search text, clicks, Back and scroll, then another click. User
-personally reports it reached the correct page. No battery-usage figures or
-highest-consuming app result has been supplied; task outcome remains pending.
-Do not infer every listed tool succeeded from invocation names alone.
+## Verification evidence
 
-Provider failure is now HTTP402 with limit_source openrouter_in_flight_budget,
-reason in_flight_budget_exhausted, Retry-After120 seconds. This differs from the
-earlier openrouter_credits request for131072 output tokens. First follow the
-specific cooldown; do not immediately rerun the long workflow, reset credentials,
-reinstall APK or claim the account balance is zero. Smaller output/history may
-reduce estimated cost in future, but no additional limit/model change made here.
-No claim cooldown has already solved the next request.
+Final release CI runs all success:
+- Android40678159006: compile/lint, publication and124 Java checks
+  (46protocol+22catalog+22snapshot+34voice/chunks).
+- Python40678159057:80 tests each3.12/3.14 with real ACP SDK0.9.0 wire fixture.
+- Exact Hermes40678159077: actual v2026.5.29.2 ACP→configured MCP→fake Android
+  with local LLM fixture; same persisted session restored after process restart.
+These use fixtures, not actual phone/provider. Native0.5 voice, permissions,
+background behavior and task UI remain phone acceptance work.
 
-## Latest real-app success — Facebook
-User independently tried a normal-language instruction to open Facebook and
-inspect total friends. Bot reported reading Friends > Your friends and user
-explicitly says the task worked correctly. Record user-confirmed Facebook
-navigation and visible-information extraction; no raw tree/screenshot supplied
-to this assistant. Do not generalize to all Facebook operations or every app.
-Personal social-account counts are not part of this repository checkpoint.
-No code/config/APK change or provider migration was needed for this success.
+Actual earlier phone evidence:110 launchable apps, package opening and screen
+reads; safe test Bengali draft `পরীক্ষা সফল`; one counter click accepted while
+immediate screen0, later user confirmed1 (do not click again blindly); English
+and Bengali TTS audible; user-confirmed successful read-only Facebook workflow.
+Settings navigation reached intended page; final battery report not supplied.
+No personal account counts/app details need to be stored here.
 
-## Latest provider blocker — credit allowance now blocks all ordinary prompts
-User reports402/openrouter_credits at saved output cap4096, plus historical errors
-that input prompt exceeds allowed affordable prompt size. This is not just the
-prior in-flight cooldown and not a bridge/APK regression. Lowering output cap
-again alone cannot guarantee recovery. Do not replay prompts or claim balance
-is exactly zero. Current exact model/account allowance not inspected here.
-Home channel was confirmed by user message gateway.set_home.success. Proposed
-test/recurring cron jobs have no confirmed IDs or delivered messages; creation
-may be incomplete and must not be assumed. List/reuse existing jobs before any
-later scheduling retry to avoid duplicates.
+## Scope and remaining separate work
 
-Official OpenRouter docs verified2026-10-28: openrouter/free routes to free models
-and filters for required features such as tools. Free usage has daily/minute
-caps; negative credit balance can still block free routes. No unlimited-use claim.
-Exact Hermes v2026.5.29.2 gateway/run.py handles /model without LLM generation;
-supports provider:model, session-only switching, and --global persistence.
-The session-only trial changes no saved default. Keep existing key/MCP/pairing.
+Do not promise full-duplex Gemini parity, AI live carrier/WhatsApp call audio,
+autonomous AI incoming calls, universal hardware repair, offline unlimited LLM,
+unlimited free cloud inference, or lock/policy bypass. Installed feminine voice
+must be auditioned; API gender cannot guarantee quality. Android UI workflow
+success needs observed recipient/target/result; external side effects follow
+user authorization. Ordinary coding/planning/conversation uses existing Hermes.
 
-## Provider recovery progress and scheduling checkpoint
-User screenshot previously showed deepseek/deepseek-v4.1-flash-1017 via OpenRouter,
-so the initial free-route change had not been observed. User then ran explicit
-/model openrouter/free --provider openrouter --global; gateway returned untranslated
-switched/provider/context/max-output/capability/saved-global labels. User later
-said Done and supplied the requested bridge-status result: version0.4.2 ready,
-expected allowed actions/apps. This is user-reported recovery of an ordinary
-read-only tool workflow after the model-switch instructions. Exact selected model
-name was not shown in the post-switch confirmation; no independent account/quota
-inspection was performed. Do not promise unlimited/free-account quota removal.
-Home chat was previously confirmed with gateway.set_home.success.
-No check-in cron job IDs or actual scheduled message delivery confirmed yet.
-
-## Latest scheduled-delivery test result
-User pasted actual Telegram Cronjob Response for bangla-check-in-test, job ID
-b32a97a7322d. A generated Bengali greeting was delivered. This confirms receipt
-of the test job output, not exact requested text, timing accuracy, saved job model
-fields or single-shot completion metadata (none shown). Wording was awkward and
-did not match the requested sentence. Do not claim natural companion style tested.
-Home-channel setup and one scheduled-delivery path are now user-confirmed.
-No regular11:00/20:00 daily job IDs or next-run results provided yet.
-
-## Recurring check-ins — confirmed by supplied cron result
-User supplied recurring-job confirmation:
-- bangla-check-in-morning, ID01076cf41bca, cron0 5 * * * (UTC), equivalent
-  daily11:00 Asia/Dhaka; next run reported2026-10-29 11:00 Bangladesh time.
-- bangla-check-in-evening, ID740de51d6d08, cron0 14 * * * (UTC), equivalent
-  daily20:00 Asia/Dhaka; next run reported2026-10-28 20:00 Bangladesh time.
-Both report scheduled/recurring, model openrouter/free, provider openrouter,
-delivery Telegram home chat. Bot reports no duplicates and test jobb32a97a7322d
-absent from its list. Do not assume archived test data was deleted: no independent
-storage inspection or include-disabled listing was provided. Actual daily
-deliveries have not yet been reported; the prior one-shot test was received.
-The stop/pause behavior was instructed/reported, not exercised on these jobs.
-This is user-supplied cron evidence, not a direct inspection from this assistant.
-
-##0.5 native companion work authorized
-User explicitly requests professional master plan and a complete integration APK,
-with native chat/mic, robust voice lifecycle and comprehensive checks; phone QA
-will follow installation. See MASTER_PLAN.md. Preserve all proven0.4.2 actions,
-provider/free route, Telegram/cron and voices. Current exact baseline head
-f63769aa29c84302e588f1a1b0ce09fb15492520. Native chat/voice is not built/tested yet.
-
-## Single next action
-Implement native companion UI/voice turn state machine and authenticated Python
-ACP backend against exact installed Hermes v2026.5.29.2. Pin optional ACP SDK0.9.0
-in existing private Python. Add tests, run Android/adapter/ACP CI, publish only on
-passing compile/lint. No actual new phone behavior claimed until user acceptance.
-
-## Still unimplemented or unverified
-- No live carrier/WhatsApp call audio, Telecom dialer role, incoming-call answer/
-  end integration, real incoming AI telephone calls, always-listening microphone
-  or standalone two-way companion chat/voice UI. Current chat remains Telegram.
-- Generic nodes can operate app controls, but per-app recipient/send/call and
-  repair workflows need individual real-phone tests. Custom/protected UI may fail.
-- Proactive Telegram one-shot delivery was received; two daily jobs are reported
-  scheduled (IDs above). First recurring delivery and stop/pause behavior remain
-  untested. No real incoming telephone-call capability is implied.
-- Feminine voice preference is profile-level; English/Bengali speech is reported
-  audible, but chosen gender/clarity are not independently confirmed. Installed
-  voices must be previewed/selected; standard Voice API has no portable gender field.
-- No guarantees of unlimited free inference or Android background uptime.
-- Debug signing key cache began in0.3; eviction can require Bridge-only reinstall.
-
-## Verification commands
-python -m unittest discover -s integrations/hermes_bridge -p 'test_*.py' -v
-CI javac socket protocol test and gradle :app:assembleDebug :app:lintDebug.
-Screen control off on every bridge restart; Stop revokes access/token and stops
-remote TTS, but cannot undo an already-dispatched Android action. No blind retries.
+Next fixes should follow actual acceptance failures, not speculative rewrites.
+Stable external signing, attachments, local inference feasibility, and tested
+app-specific messaging recipes are future milestones. Current signing caches a
+development key; eviction may require Bridge-only reinstall, never Termux reset.
+Rollback: stop combined launcher; use existing Telegram-only launcher. Hermes
+config/Telegram/cron remain independent of native companion backend.

@@ -67,7 +67,7 @@ own session persistence and separate companion IDs.
 -Android process/battery restrictions: visible health, no uptime guarantee.
 
 ## Verification and release gates
-1. Preserve90 existing JVM bridge/catalog/snapshot checks and61 Python tests.
+1. Preserve90 existing JVM bridge/catalog/snapshot checks and61 prior Python tests.
 2. Add pure state-machine tests for overlapping start, late/duplicate callbacks,
    silence/error/busy, Stop, turn rearm and speech chunks.
 3. Backend real-loopback tests for auth/Host/Origin/body/ID conflict/restart,
@@ -80,10 +80,25 @@ own session persistence and separate companion IDs.
    result is claimed by JVM/HTTP fixtures or compile alone.
 
 ## Installation and checkpoints
-Keep current Telegram/cron launch running. Install0.5 APK, renew existing pairing,
-install the pinned companion backend/ACP optional package in private Python and
-start it separately (phone-only). Provide one pinned setup command and a simple
-launcher. Update AI_HANDOFF and build status with exact source/run/release hashes.
+Install0.5 APK, renew existing pairing, stop the old foreground gateway with
+Ctrl+C, then install the pinned companion backend/ACP package privately. The
+combined launcher runs backend plus existing Telegram gateway in one Termux
+session. No new Termux session is required. See UPGRADE_0_5.md for the complete
+pinned setup command. AI_HANDOFF and build status record exact source/run hashes.
 Stable external release signing, full-duplex local audio, offline local inference,
 attachments and device-specific telecom roles are separate future work; no hidden
 placeholder buttons that claim these are active.
+
+
+## Delivered checkpoint —2026-10-28
+Native0.5.0 code, backend, installer and phone-only workflows are implemented.
+Release dev-20 is built from c1bdca0215d5386ff096cc6cc5591d900e0fb5a3.
+Compile/lint,124 Java checks and80 Python tests on each of3.12/3.14 passed.
+Exact Hermes v2026.5.29.2 ACP→MCP→fake Android round trip and process-restart
+session restoration passed. Real TECNO native voice/background/approval flow
+remains the next acceptance gate; no all-device or all-app success claim.
+
+Future separate milestones: stable signing/backup policy; device-specific messaging
+recipes after observed tests; attachment handling; optional local inference only
+after phone resource measurement; genuine full-duplex/call roles only after
+platform-feasibility tests. These are not shipped as fake active controls.
