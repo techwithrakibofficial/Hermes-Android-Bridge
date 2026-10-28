@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">Hermes Bridge</string>
     <string name="service_name">Hermes Bridge • Android actions</string>
-    <string name="service_summary">User-requested Home and Back actions</string>
-    <string name="service_description">Performs Home and Back when you tap a test button or send an authenticated local request after explicitly starting the local bridge. A fresh secret token is required for each bridge session. It does not read screen content or record input. Stop the bridge in the app or disable this service at any time. Hermes agent integration is not connected yet.</string>
+    <string name="service_summary">User-requested Home, Back, Settings and supported app launches actions</string>
+    <string name="service_description">Performs Home, Back, Settings and supported app launches when you tap a test button or send an authenticated local request after explicitly starting the local bridge. A fresh secret token is required for each bridge session. It does not read screen content or record input. Stop the bridge in the app or disable this service at any time. Hermes agent integration is not connected yet.</string>
     <style name="AppTheme" parent="android:style/Theme.Material.NoActionBar">
         <item name="android:fontFamily">sans</item>
         <item name="android:windowLightStatusBar">false</item>

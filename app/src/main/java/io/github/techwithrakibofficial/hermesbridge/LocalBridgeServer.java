@@ -10,6 +10,8 @@ import java.util.*;
 /** A deliberately narrow HTTP/1.1 loopback protocol. No bodies or arbitrary commands. */
 public final class LocalBridgeServer implements AutoCloseable {
     public interface ActionHandler { boolean execute(String action); }
+    public static final List<String> SUPPORTED_APPS = Collections.unmodifiableList(Arrays.asList(
+        "whatsapp", "facebook", "messenger", "telegram", "chrome", "termux"));
     private final ServerSocket listener;
     private final ActionHandler handler;
     private final String token;
@@ -87,13 +89,19 @@ public final class LocalBridgeServer implements AutoCloseable {
         if (headers.containsKey("transfer-encoding") || !headers.getOrDefault("content-length", "0").equals("0"))
             throw new BadRequest(400, "request_body_not_supported");
         if (request[0].equals("GET") && request[1].equals("/v1/status")) {
-            respondJson(socket, 200, "{\"bridge\":\"ready\",\"allowed_actions\":[\"home\",\"back\"]}");
+            respondJson(socket, 200, "{\"bridge\":\"ready\",\"version\":\"0.3.0\",\"allowed_actions\":[\"home\",\"back\",\"settings\",\"open_app\"],\"supported_apps\":[\"whatsapp\",\"facebook\",\"messenger\",\"telegram\",\"chrome\",\"termux\"]}");
             return;
         }
         if (!request[0].equals("POST")) throw new BadRequest(405, "method_not_allowed");
         final String action;
         if (request[1].equals("/v1/actions/home")) action = "home";
         else if (request[1].equals("/v1/actions/back")) action = "back";
+        else if (request[1].equals("/v1/actions/settings")) action = "settings";
+        else if (request[1].startsWith("/v1/actions/open-app/")) {
+            String app = request[1].substring("/v1/actions/open-app/".length());
+            if (!SUPPORTED_APPS.contains(app)) throw new BadRequest(404, "app_not_allowed");
+            action = "open_app:" + app;
+        }
         else throw new BadRequest(404, "action_not_allowed");
         String id = headers.getOrDefault("x-request-id", "");
         if (!id.matches("[A-Za-z0-9_-]{8,80}")) throw new BadRequest(400, "valid_request_id_required");

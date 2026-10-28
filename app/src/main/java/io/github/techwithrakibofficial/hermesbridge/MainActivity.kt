@@ -69,7 +69,7 @@ class MainActivity : ComponentActivity() {
                     style = MaterialTheme.typography.labelLarge)
                 Text("Your agent.\nYour phone.", style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Bold)
-                Text("Companion setup • v0.2.0", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Companion setup • v0.3.0", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 StatusCard("01  Accessibility", if (connected) "Service connected" else "Service not connected") {
                     Text("Home ও Back action পরীক্ষা করতে এই service নিজে enable করুন। এই version screen content পড়ে না।")
                     Button(onClick = { showDisclosure = true }, modifier = Modifier.fillMaxWidth()) {
@@ -123,7 +123,7 @@ class MainActivity : ComponentActivity() {
                         style = MaterialTheme.typography.bodySmall)
                 }
                 StatusCard("03  Local Android bridge", bridge.message) {
-                    Text("Termux থেকে secret token দিয়ে শুধু Home ও Back command চালাতে পারবেন। Hermes chat এখনও যুক্ত হয়নি।")
+                    Text("Hermes/Termux থেকে secret token দিয়ে Home, Back, Settings ও নির্দিষ্ট app খোলার command চালাতে পারবেন। App-এর নিজস্ব chat UI এখনও যুক্ত হয়নি।")
                     Button(enabled = connected && !bridge.running, onClick = { showBridgeConsent = true },
                         modifier = Modifier.fillMaxWidth()) { Text("Start local bridge") }
                     if (bridge.running) {
@@ -142,6 +142,8 @@ class MainActivity : ComponentActivity() {
                         OutlinedButton(onClick = { BridgeAccessibilityService.stopBridge() },
                             modifier = Modifier.fillMaxWidth()) { Text("Stop local bridge") }
                     }
+                    Text("Available: Home • Back • Settings • Open supported apps", style = MaterialTheme.typography.bodySmall)
+                    Text("App খোলা যাবে। Screen পড়া, click/type বা message পাঠানো এখনও যুক্ত হয়নি।", style = MaterialTheme.typography.bodySmall)
                     Text(bridge.lastAction, style = MaterialTheme.typography.bodySmall)
                     Text("Android request গ্রহণ করলেও ফোনের screen দেখে action নিশ্চিত করুন।",
                         style = MaterialTheme.typography.bodySmall)
@@ -152,8 +154,8 @@ class MainActivity : ComponentActivity() {
         }
         if (showBridgeConsent) AlertDialog(
             onDismissRequest = { showBridgeConsent = false },
-            title = { Text("Allow local Home / Back commands?") },
-            text = { Text("Bridge চালু থাকলে এই ফোনের secret token থাকা client Home ও Back command দিতে পারবে। এটি শুধু 127.0.0.1-এ শোনে। আপনি Stop চাপলে, Accessibility বন্ধ করলে বা process বন্ধ হলে session শেষ হবে।") },
+            title = { Text("Allow local Android commands?") },
+            text = { Text("Bridge চালু থাকলে এই ফোনের secret token থাকা client Home, Back, Settings ও WhatsApp/Facebook/Messenger/Telegram/Chrome/Termux খুলতে পারবে। এটি শুধু 127.0.0.1-এ শোনে। আপনি Stop চাপলে, Accessibility বন্ধ করলে বা process বন্ধ হলে session শেষ হবে।") },
             confirmButton = { TextButton(onClick = {
                 showBridgeConsent = false
                 BridgeAccessibilityService.startBridge()
@@ -163,7 +165,7 @@ class MainActivity : ComponentActivity() {
         if (showDisclosure) AlertDialog(
             onDismissRequest = { showDisclosure = false },
             title = { Text("Enable manual action tests?") },
-            text = { Text("এই development version শুধু আপনার tap করা Home ও Back test চালায়। Screen পড়া, typing, gesture বা Hermes remote action নেই। Settings থেকে service যেকোনো সময় বন্ধ করতে পারবেন।") },
+            text = { Text("এই version Home/Back button test এবং আপনি local bridge Start করলে authenticated Android command চালায়। Screen পড়া, typing, message পাঠানো বা gesture নেই। Settings থেকে service যেকোনো সময় বন্ধ করতে পারবেন।") },
             confirmButton = { TextButton(onClick = {
                 showDisclosure = false
                 try { startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }

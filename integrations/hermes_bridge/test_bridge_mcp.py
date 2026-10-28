@@ -26,7 +26,7 @@ class FakeAndroid(BaseHTTPRequestHandler):
         pass
 
     def do_GET(self):
-        self.answer({"bridge": "ready", "allowed_actions": ["home", "back"]})
+        self.answer({"bridge": "ready", "allowed_actions": ["home", "back", "settings", "open_app"], "supported_apps": list(bridge.SUPPORTED_APPS)})
 
     def do_POST(self):
         self.calls.append((self.path, self.headers.get("X-Request-Id"), self.headers.get("Authorization")))
@@ -171,7 +171,31 @@ class AdapterTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0)
         responses = [json.loads(line) for line in result.stdout.splitlines()]
         self.assertEqual([r["id"] for r in responses], [1, 2, 3])
-        self.assertEqual(len(responses[1]["result"]["tools"]), 3)
+        self.assertEqual(len(responses[1]["result"]["tools"]), 5)
+
+    def test_settings_uses_only_allowed_path(self):
+        self.client.pair(TOKEN)
+        self.client.request("android_open_settings")
+        self.assertEqual(FakeAndroid.calls[0][0], "/v1/actions/settings")
+
+    def test_supported_apps_dispatch_exact_alias_paths(self):
+        self.client.pair(TOKEN)
+        for app in bridge.SUPPORTED_APPS:
+            self.client.request("android_open_app", arguments={"app": app})
+        self.assertEqual([row[0] for row in FakeAndroid.calls], ["/v1/actions/open-app/" + app for app in bridge.SUPPORTED_APPS])
+
+    def test_app_cannot_accept_arbitrary_package_url_or_path(self):
+        self.client.pair(TOKEN)
+        for arguments in [{}, {"app":"com.evil.package"}, {"app":"../settings"}, {"app":"https://example.com"}, {"app":"whatsapp", "url":"evil"}]:
+            with self.assertRaises(bridge.BridgeError):
+                self.client.request("android_open_app", arguments=arguments)
+        self.assertEqual(FakeAndroid.calls, [])
+
+    def test_app_tool_schema_requires_bounded_enum(self):
+        schema = bridge.input_schema("android_open_app")
+        self.assertEqual(schema["required"], ["app"])
+        self.assertFalse(schema["additionalProperties"])
+        self.assertEqual(set(schema["properties"]["app"]["enum"]), {"whatsapp","facebook","messenger","telegram","chrome","termux"})
 
 
 if __name__ == "__main__":

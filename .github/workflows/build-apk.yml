@@ -34,14 +34,19 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.11.1'
+      - name: Restore development debug signing key
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: hermes-development-debug-keystore-v1
       - name: Compile and lint
         run: gradle --no-daemon --stacktrace :app:assembleDebug :app:lintDebug
       - name: Prepare phone download
         run: |
           mkdir -p dist
-          cp app/build/outputs/apk/debug/app-debug.apk dist/Hermes-Bridge-0.2.0.apk
+          cp app/build/outputs/apk/debug/app-debug.apk dist/Hermes-Bridge-0.3.0.apk
           cd dist
-          sha256sum Hermes-Bridge-0.2.0.apk > SHA256SUMS.txt
+          sha256sum Hermes-Bridge-0.3.0.apk > SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
           name: Hermes-Bridge-APK
@@ -71,4 +76,4 @@ jobs:
           BUILD_SHA: ${{ github.sha }}
           RUN_NUMBER: ${{ github.run_number }}
         run: |
-          gh release create "dev-${RUN_NUMBER}" dist/* --target "$BUILD_SHA" --prerelease --title "Hermes Bridge 0.2.0 • device test ${RUN_NUMBER}" --notes 'Development APK: explicit local bridge Start/Stop, fresh 256-bit session token, authenticated status and Home/Back only. Binds to 127.0.0.1:18765. Protocol tests use a fake action handler; actual Android/Termux integration needs phone testing. Voice controls retained. Hermes agent integration is not implemented. Debug signing may differ from earlier builds.'
+          gh release create "dev-${RUN_NUMBER}" dist/* --target "$BUILD_SHA" --prerelease --title "Hermes Bridge 0.3.0 • device test ${RUN_NUMBER}" --notes 'Development APK 0.3.0: authenticated Home/Back, Settings and allowlisted WhatsApp/Facebook/Messenger/Telegram/Chrome/Termux launches. Android acceptance requires visual device verification. No screen reading, typing or messaging. Updated MCP adapter/setup is required for the new tools; keep the private Python launcher. Development signing cache improves continuity but may be evicted; first update from an older runner key can require Bridge-only reinstall.'

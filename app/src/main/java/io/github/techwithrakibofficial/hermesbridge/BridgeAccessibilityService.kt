@@ -2,6 +2,8 @@ package io.github.techwithrakibofficial.hermesbridge
 
 import android.accessibilityservice.AccessibilityService
 import android.content.Intent
+import android.content.ActivityNotFoundException
+import android.provider.Settings
 import android.os.Handler
 import android.os.Looper
 import android.view.accessibility.AccessibilityEvent
@@ -42,7 +44,8 @@ class BridgeAccessibilityService : AccessibilityService() {
                         val accepted = when (action) {
                             "home" -> performGlobalAction(GLOBAL_ACTION_HOME)
                             "back" -> performGlobalAction(GLOBAL_ACTION_BACK)
-                            else -> false
+                            "settings" -> launchSettings()
+                            else -> if (action.startsWith("open_app:")) launchAllowedApp(action.removePrefix("open_app:")) else false
                         }
                         bridgeState.value = bridgeState.value.copy(
                             lastAction = "$action: " + if (accepted) "accepted by Android; check phone screen" else "rejected by Android"
@@ -68,6 +71,23 @@ class BridgeAccessibilityService : AccessibilityService() {
         }
     }
 
+    private fun launchSettings(): Boolean = launchIntent(Intent(Settings.ACTION_SETTINGS))
+
+    private fun launchAllowedApp(alias: String): Boolean {
+        val packageName = APP_PACKAGES[alias] ?: return false
+        val intent = packageManager.getLaunchIntentForPackage(packageName) ?: return false
+        return launchIntent(intent)
+    }
+
+    private fun launchIntent(intent: Intent): Boolean = try {
+        startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        true
+    } catch (_: ActivityNotFoundException) {
+        false
+    } catch (_: SecurityException) {
+        false
+    }
+
     private fun stopSession() {
         server?.close()
         server = null
@@ -89,6 +109,14 @@ class BridgeAccessibilityService : AccessibilityService() {
     override fun onDestroy() { disconnect(); super.onDestroy() }
 
     companion object {
+        private val APP_PACKAGES = mapOf(
+            "whatsapp" to "com.whatsapp",
+            "facebook" to "com.facebook.katana",
+            "messenger" to "com.facebook.orca",
+            "telegram" to "org.telegram.messenger",
+            "chrome" to "com.android.chrome",
+            "termux" to "com.termux"
+        )
         const val PORT = 18765
         private var instance: BridgeAccessibilityService? = null
         private val connectedState = MutableStateFlow(false)

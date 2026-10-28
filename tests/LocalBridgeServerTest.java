@@ -38,8 +38,15 @@ public class LocalBridgeServerTest {
             check(request(server,"POST","/v1/actions/back",token,"X-Request-Id: action001\r\n").startsWith("HTTP/1.1 409"), "replay cannot change action");
             check(request(server,"POST","/v1/actions/back",token,"X-Request-Id: action002\r\n").startsWith("HTTP/1.1 200"), "back accepted");
             check(actions.get() == 2, "unauthorized/malformed/replay requests never dispatch");
+            check(request(server,"GET","/v1/status",token, "").contains("supported_apps"), "advertise bounded app capability");
+            check(request(server,"POST","/v1/actions/settings",token,"X-Request-Id: settings1\r\n").contains("\"accepted\":true"), "settings dispatch allowed");
+            for (String app : LocalBridgeServer.SUPPORTED_APPS) {
+                check(request(server,"POST","/v1/actions/open-app/"+app,token,"X-Request-Id: openapp-"+app+"\r\n").startsWith("HTTP/1.1 200"), "supported app dispatch: " + app);
+            }
+            check(request(server,"POST","/v1/actions/open-app/com.evil.app",token,"X-Request-Id: evilapp01\r\n").startsWith("HTTP/1.1 404"), "arbitrary package denied");
+            check(request(server,"POST","/v1/actions/open-app/whatsapp%2F..",token,"X-Request-Id: encoded01\r\n").startsWith("HTTP/1.1 404"), "encoded path injection denied");
             check(request(server,"GET","/v1/status",token,"X-Large: " + "a".repeat(1100) + "\r\n").startsWith("HTTP/1.1 431"), "oversized line rejected");
-            for (int i=2; i<256; i++) request(server,"POST","/v1/actions/home",token,"X-Request-Id: capacity"+i+"\r\n");
+            for (int i=actions.get(); i<256; i++) request(server,"POST","/v1/actions/home",token,"X-Request-Id: capacity"+i+"\r\n");
             check(request(server,"POST","/v1/actions/home",token,"X-Request-Id: overflow1\r\n").startsWith("HTTP/1.1 429"), "session bounded without replay eviction");
         }
         try (LocalBridgeServer fresh = new LocalBridgeServer(0, action -> false)) {

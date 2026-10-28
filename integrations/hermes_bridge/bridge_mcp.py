@@ -19,16 +19,36 @@ import uuid
 BASE_URL = "http://127.0.0.1:18765"
 SUPPORTED_PROTOCOLS = {"2024-11-05", "2025-03-26", "2025-06-18", "2025-11-25"}
 MAX_MESSAGE = 65536
+SUPPORTED_APPS = ("whatsapp", "facebook", "messenger", "telegram", "chrome", "termux")
 TOOL_PATHS = {
     "android_bridge_status": ("GET", "/v1/status"),
     "android_home": ("POST", "/v1/actions/home"),
     "android_back": ("POST", "/v1/actions/back"),
+    "android_open_settings": ("POST", "/v1/actions/settings"),
+    "android_open_app": ("POST", None),
 }
 DESCRIPTIONS = {
+    "android_open_settings": "Open normal Android Settings when the user asks. Does not change settings or bypass protected restrictions. Verify the phone screen; never automatically retry.",
+    "android_open_app": "Open one supported installed app by its exact alias when the user asks. Does not type, click inside apps, send messages or make calls. Verify the phone screen; never automatically retry.",
     "android_bridge_status": "Check the local Android companion bridge only, not Hermes or Telegram health. No Android action.",
     "android_home": "Go to the Android launcher only when the user asks. accepted:true is Android acceptance, not proof of visible completion. Never automatically retry.",
     "android_back": "Perform Android Back only when the user asks. May close the keyboard or leave the current screen. Never automatically retry or claim visual completion.",
 }
+
+
+def valid_arguments(name, arguments):
+    if not isinstance(arguments, dict):
+        return False
+    if name == "android_open_app":
+        return set(arguments) == {"app"} and arguments["app"] in SUPPORTED_APPS
+    return not arguments
+
+
+def input_schema(name):
+    if name == "android_open_app":
+        return {"type": "object", "properties": {"app": {"type": "string", "enum": list(SUPPORTED_APPS)}},
+                "required": ["app"], "additionalProperties": False}
+    return {"type": "object", "properties": {}, "additionalProperties": False}
 
 
 class BridgeError(Exception):
@@ -59,11 +79,16 @@ class BridgeClient:
         except (OSError, ValueError):
             raise BridgeError("Not paired. Start the Android bridge and run the adapter's --pair command.") from None
 
-    def request(self, name, token=None):
+    def request(self, name, token=None, arguments=None):
         if name not in TOOL_PATHS:
             raise BridgeError("Unsupported Android action.")
+        arguments = {} if arguments is None else arguments
+        if not valid_arguments(name, arguments):
+            raise BridgeError("Unsupported app or unexpected tool arguments.")
         token = token if token is not None else self.read_token()
         method, path = TOOL_PATHS[name]
+        if name == "android_open_app":
+            path = "/v1/actions/open-app/" + arguments["app"]
         headers = {"Authorization": "Bearer " + token}
         if method == "POST":
             headers["X-Request-Id"] = uuid.uuid4().hex
@@ -76,7 +101,11 @@ class BridgeClient:
                     raise BridgeError("Invalid bridge response. Do not retry an action automatically.")
                 data = json.loads(raw)
                 if name == "android_bridge_status" and isinstance(data, dict) and data.get("bridge") == "ready":
-                    return {"bridge": "ready", "allowed_actions": ["home", "back"]}
+                    actions = data.get("allowed_actions", [])
+                    apps = data.get("supported_apps", [])
+                    return {"bridge": "ready",
+                            "allowed_actions": [item for item in actions if item in ("home", "back", "settings", "open_app")] if isinstance(actions, list) else [],
+                            "supported_apps": [item for item in apps if item in SUPPORTED_APPS] if isinstance(apps, list) else []}
                 if method == "POST" and isinstance(data, dict) and data.get("accepted") is True:
                     return {"accepted": True, "verification": "check_phone_screen", "automatic_retry": False}
                 raise BridgeError("Bridge did not confirm the request. Check the phone; do not automatically retry.")
@@ -85,7 +114,7 @@ class BridgeClient:
                 401: "Pairing token expired or incorrect. Start/copy/pair the current bridge session again.",
                 409: "Request already used. Check the phone; do not automatically retry.",
                 429: "Bridge session limit reached. Stop/start the bridge and pair again.",
-                503: "Android action was rejected or timed out. Result may be ambiguous; check the phone and do not automatically retry.",
+                503: "Android action was rejected, app unavailable/blocked, or request timed out. Check the phone and do not automatically retry.",
             }
             raise BridgeError(messages.get(error.code, "Bridge HTTP request rejected. No automatic retry.")) from None
         except (OSError, urllib.error.URLError, TimeoutError, ValueError):
@@ -140,15 +169,15 @@ class MCPAdapter:
             return self.error(request_id, -32000, "Initialize first")
         elif method == "tools/list":
             result = {"tools": [{"name": name, "description": DESCRIPTIONS[name],
-                                  "inputSchema": {"type": "object", "properties": {}, "additionalProperties": False}}
+                                  "inputSchema": input_schema(name)}
                                  for name in TOOL_PATHS]}
         elif method == "tools/call":
             name = params.get("name")
             arguments = params.get("arguments", {})
-            if not isinstance(name, str) or name not in TOOL_PATHS or not isinstance(arguments, dict) or arguments:
+            if not isinstance(name, str) or name not in TOOL_PATHS or not valid_arguments(name, arguments):
                 return self.error(request_id, -32602, "Unknown tool or unexpected arguments")
             try:
-                data = self.client.request(name)
+                data = self.client.request(name, arguments=arguments)
                 result = {"content": [{"type": "text", "text": json.dumps(data)}], "isError": False}
             except BridgeError as error:
                 result = {"content": [{"type": "text", "text": str(error)}], "isError": True}
