@@ -25,17 +25,18 @@ Directly verified:
 - Version 0.2.0, versionCode 4, APK size 9337200 bytes.
 
 ## 4. Exact stopping point
-0.2.0 APK released. Native Termux-to-phone status/Home/Back/Stop tests NOT performed yet. Actual Android background lifetime and stop/restart token rotation require device verification. No Hermes chat/adapter/microphone integration yet.
+User explicitly confirms remote Back works and the post-Stop status request fails to connect as expected. User previously replied Done after status/Home instructions; no raw output or screen evidence for those two was returned. These are user-reported device results, not independently observed Android tests.
+Native Termux-to-Android bridge validation has progressed; next inspect existing Ubuntu PRoot/Hermes environment read-only before writing an adapter. Keep current bridge stopped until needed. No Hermes adapter/chat/microphone exists yet.
 
 ## 5. Outstanding and blockers
-1. User test via docs/LOCAL_BRIDGE.md, without exposing tokens.
+1. Confirm exact installed PRoot distro alias/launch mechanism and current Hermes entrypoints using read-only inspection. Never expose keys or Telegram configuration.
 2. Read-only inspection of installed Hermes v0.15.2 supported tool/adapter interfaces, then separate adapter that preserves existing Telegram runtime.
 3. Chat/task status and Android voice input with visible active state and cancellation.
 4. Stable signing/monotonic release workflow; default debug signing may differ by CI runner.
 5. Obtain exact Telegram gateway status if needed; do not infer health from old screenshot.
 
 ## 6. Single next action
-Install 0.2.0, explicitly start bridge, copy pairing command to native Termux, run status then Home test, and report output/visible result without token.
+In native Termux run proot-distro list and report the installed distro alias. No recorded successful native-Termux-to-PRoot launch command is available, so do not guess ubuntu as an alias. If proot-distro is unavailable, inspect the user's actual launcher next rather than reinstalling.
 
 ## 7. Continue commands/files
 docs/LOCAL_BRIDGE.md contains exact device commands, protocol and limits.
@@ -43,3 +44,6 @@ CI protocol tests: javac -d /tmp/hermes-protocol-test app/src/main/java/io/githu
 Android: gradle --no-daemon :app:assembleDebug :app:lintDebug (Gradle 8.11.1/JDK17/SDK35).
 Local scratch lacks javac; tests were run and verified in CI.
 Do not repeat Hermes installation or Telegram pairing. Resolved first-run SDK issue: removed package tools, fixed by requesting platform-tools.
+
+## Recorded Hermes environment context (prior conversation, not freshly verified)
+Hermes executable /usr/local/bin/hermes, Python 3.14.4, package location /usr/local/lib/python3.14/dist-packages, reported venv /usr/local/lib/python3.14/dist-packages/venv. Previously recorded gateway command hermes gateway run produced Telegram replies. Current gateway process/health unknown. No exact distro alias or launch script found. Latest upstream docs may describe a different Hermes version; v0.15.2 tag lookup returned 404, so inspect installed code/help before selecting a plugin/MCP mechanism.

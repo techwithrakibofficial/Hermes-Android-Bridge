@@ -8,8 +8,10 @@ Updated 2026-10-28, Asia/Dhaka.
 | Artifact upload / prerelease publication | PASS |
 | Existing voice controls | User says all okay |
 | Native Termux authenticated status | Awaiting phone test |
-| Remote Home/Back visible result | Awaiting phone test |
-| Stop/restart/old-token invalidation on Android | Awaiting phone test |
+| Remote Back visible result | User explicitly confirms working |
+| Status/Home tests | User replied Done after instructions; raw output/screens not captured |
+| Stop closes listener | User confirms Failed to connect after Stop |
+| Restart/old-token invalidation on Android | Not separately verified |
 | Accessibility process background lifetime | Awaiting phone test |
 | Existing Telegram health | Not independently verified |
 | Hermes adapter/chat/microphone | Not implemented |
@@ -22,3 +24,5 @@ Size: 9337200 bytes.
 
 Protocol test coverage: bind address, token format/auth, status, browser-origin rejection, GET cannot act, unknown action/missing ID/body/duplicate-header rejection, Home/Back fake dispatch, replay protection, oversized headers, bounded session without ID eviction, token rotation, Android rejection response and reserved failed IDs.
 Local javac execution was unavailable; CI performed the tests with JDK17. No emulator/device action tests ran. Accepted means Android accepted a request; verify the phone screen.
+
+Latest user report: Back works; after Stop, status fails to connect. Record as user-reported phone evidence. Next action is read-only installed PRoot distro inventory, then Hermes integration inspection; no reinstall or Telegram changes.
