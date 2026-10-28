@@ -142,15 +142,24 @@ SHA256a50660a98349bc350bc7fb640e1bd0157516f6666bde4b6876683f1105227e14.
 No new local tests or actual0.4.2 phone execution claimed. Python adapter source
 is unchanged; prior61 checks on3.12/3.14 remain baseline, not rerun in this build.
 
+## Latest0.4.2 phone result — partial acceptance
+User pasted the bot's actual-result report: exact Bridge package open succeeded;
+fresh screen found pinned test button n4, click opened Hermes control test;
+editable field n7 accepted Bengali text and a later screen read Draft: পরীক্ষা সফল.
+Counter button n10 click returned accepted:true, but subsequent read still showed
+Counter:0. No error code, no blind re-click. This confirms reported test-activity
+navigation and Bengali text entry; it does NOT prove the counter click completed.
+No raw node payload, screenshot or user's independent visible counter observation
+has been supplied. UI/Accessibility update latency, stale child reads or targeting
+are hypotheses; no specific cause established and no new patch warranted yet.
+
 ## Single next action
-Follow docs/FIX_0_4_2.md: Ctrl+C foreground gateway, install dev-16 APK0.4.2,
-Start bridge/enable screen control, copy fresh pairing export alone into native
-Termux, pair with existing private Python/bridge_mcp.py --pair, then launch saved
-hermes-with-android gateway run. No adapter/SDK/provider/model/Telegram reset.
-Keep the saved output cap. Send one combined open+screen+click/type/counter task;
-do not switch foreground apps while it runs. Verify actual Draft/Counter on phone.
-Report specific new error if any, not another blind scroll loop. Read-only screen
-and opening already work; click/type/scroll and audible speech still need proof.
+Do not click again or reopen the test through its button, which could create a new
+activity/counter. Ask user to return to the EXISTING Hermes Bridge task via Android
+Recents, keep the same Hermes control test activity, and report the visible Draft
+and Counter. If1, compare prior read timing; if0, inspect exact clickable target
+and raw read data before any intentional second click. Do not infer success from
+accepted. Preserve provider output cap and working pairing; no reinstall needed.
 
 ## Still unimplemented or unverified
 - No live carrier/WhatsApp call audio, Telecom dialer role, incoming-call answer/

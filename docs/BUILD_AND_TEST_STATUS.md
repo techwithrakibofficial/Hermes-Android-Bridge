@@ -17,3 +17,10 @@
 
 https://github.com/techwithrakibofficial/Hermes-Android-Bridge/actions/runs/40652609851
 https://github.com/techwithrakibofficial/Hermes-Android-Bridge/releases/tag/dev-16
+
+## Latest0.4.2 user-supplied phone report
+Pinned button click opened Hermes control test. Bengali text entry was confirmed
+by a subsequent Draft: পরীক্ষা সফল read. Counter click accepted:true but read
+Counter:0; increment remains unresolved, no automatic retry made. Need the user's
+visible value in the existing activity before assuming latency/cache/targeting or
+patching. Scroll and audible speech still have no confirmed successful result.
