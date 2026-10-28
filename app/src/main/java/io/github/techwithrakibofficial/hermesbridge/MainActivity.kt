@@ -63,13 +63,16 @@ class MainActivity : ComponentActivity() {
             showVoices = false
         }
         Surface(modifier = Modifier.fillMaxSize()) {
-            Column(Modifier.safeDrawingPadding().verticalScroll(rememberScrollState()).padding(24.dp),
+            Column(Modifier.fillMaxSize().safeDrawingPadding()) {
+                OutlinedButton(onClick = { startActivity(Intent(this@MainActivity, ControlTestActivity::class.java)) },
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp)) { Text("Open safe control test") }
+            Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp)) {
                 Text("HERMES / ANDROID", color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.labelLarge)
                 Text("Your agent.\nYour phone.", style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Bold)
-                Text("Companion setup • v0.4.1", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Companion setup • v0.4.2", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 StatusCard("01  Accessibility", if (connected) "Service connected" else "Service not connected") {
                     Text("Service enable করুন। Local bridge ও screen control চালু থাকলে Hermes দৃশ্যমান screen পড়ে click, scroll ও text লিখতে পারবে।")
                     Button(onClick = { showDisclosure = true }, modifier = Modifier.fillMaxWidth()) {
@@ -149,13 +152,13 @@ class MainActivity : ComponentActivity() {
                     Text("Screen চালু করলে দৃশ্যমান personal text Hermes ও আপনার model provider-এর কাছে যেতে পারে। Password field বাদ দেওয়া হয়; সব sensitive text চেনার নিশ্চয়তা নেই। Stop করলে access বন্ধ।", style = MaterialTheme.typography.bodySmall)
                     Text("Available: Screen • Click • Long press • Scroll • Type • Apps • Dialer • Speak • Quick Settings", style = MaterialTheme.typography.bodySmall)
                     Text("Call বা message-এর সঠিক ব্যক্তি ও ফল screen দেখে যাচাই করতে হবে। Call audio-তে AI কথোপকথন নেই।", style = MaterialTheme.typography.bodySmall)
-                    OutlinedButton(onClick = { startActivity(Intent(this@MainActivity, ControlTestActivity::class.java)) }, modifier = Modifier.fillMaxWidth()) { Text("Open safe control test") }
                     Text(bridge.lastAction, style = MaterialTheme.typography.bodySmall)
                     Text("Android request গ্রহণ করলেও ফোনের screen দেখে action নিশ্চিত করুন।",
                         style = MaterialTheme.typography.bodySmall)
                 }
                 Text("Developer Options প্রয়োজন নেই। কোনো setting আপনার EMI policy দ্বারা blocked থাকলে bypass করবেন না; পরীক্ষার ফল জানান।",
                     color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+            }
             }
         }
         if (showBridgeConsent) AlertDialog(

@@ -112,14 +112,38 @@ other configuration. Temporary-file validation passed for dict and legacy string
 model formats; actual phone save and post-change API request remain untested.
 This does not add credits, change inference pricing or guarantee unlimited free use.
 
+## Latest phone evidence and0.4.2 repair
+After the output-cap instructions the user reported a successful short reply,
+then android_screen read org.telegram.messenger with25 nodes. Exact-package open
+then read Bridge with41/44 nodes. This confirms opening and read-only screen
+observation on the phone, not click/type/scroll success. Returning to Telegram
+between prompts changes the foreground package; combine open+inspect+act in one
+instruction and do not touch/switch apps while it runs.
+Latest combined test: Bridge opened; test button was below viewport. Three new
+snapshot+scroll attempts all returned stale_snapshot_observe_again. No scroll,
+click, draft, Counter:1 or audible TTS result is established. Stop repeating this
+old test before the repair.
+Confirmed overly broad code: every content/window/text/scroll event incremented
+one revision and invalidated the entire lease. Old generic error also covered
+wrong IDs/expiry, so the precise trigger on the phone remains uncertain.
+0.4.2 replaces event-counter rejection with fresh bounded visible-context hash,
+window/package and exact Android node identity/state checks before every UI
+mutation. Keeps60s/single-use/locked/password/supported-action checks; specific
+codes distinguish missing/mismatched/expired lease, changed window/context/node
+and validation timeout. Validation is bounded within a3.5s UI-node dispatch budget
+and a deadline check prevents starting a mutation after validation used its time.
+The test button is pinned outside the scrolling settings content so prior scroll
+position cannot hide it. Existing19-tool adapter is unchanged/compatible.
+The local execution environment disconnected during coding; sources were staged
+through GitHub. New JVM guard fixtures and compile/lint await GitHub Actions.
+No new0.4.2 local tests or phone execution claimed.
+
 ## Single next action
-User Ctrl+C foreground gateway. Run backed-up output-limit command from
- docs/PROVIDER_402.md; confirm PASS model.max_tokens=4096. Restart saved private
-hermes-with-android gateway run, send /new in Telegram, request a brief text-only
-reply first. If successful, make one read-only screen request before resuming safe
-UI tests. No bridge restart/pairing, provider/key/model change needed for this step.
-Current TTS language remains en-US; audible speech and safe-test Draft/Counter
-are still pending. Stop repeating402 requests until config changes are loaded.
+Run CI for0.4.2, fix actual failures and publish only a passing build. Then install
+new APK, renew existing pairing (no SDK/model/provider/Telegram changes), restart
+the saved private launcher and test pinned test-button click + Bengali draft +
+counter with fresh observations. Record actual visible results. Keep saved
+model.max_tokens output cap; do not increase context_length or request free credits.
 
 ## Still unimplemented or unverified
 - No live carrier/WhatsApp call audio, Telecom dialer role, incoming-call answer/

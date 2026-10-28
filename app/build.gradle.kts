@@ -10,8 +10,8 @@ android {
         applicationId = "io.github.techwithrakibofficial.hermesbridge"
         minSdk = 26
         targetSdk = 35
-        versionCode = 7
-        versionName = "0.4.1"
+        versionCode = 8
+        versionName = "0.4.2"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

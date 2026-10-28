@@ -6,6 +6,7 @@ import android.content.ActivityNotFoundException
 import android.provider.Settings
 import android.app.KeyguardManager
 import android.os.Build
+import android.os.SystemClock
 import android.os.BatteryManager
 import android.net.Uri
 import android.content.IntentFilter
@@ -60,12 +61,14 @@ class BridgeAccessibilityService : AccessibilityService() {
                 if (server !== candidate || !candidate.isRunning) return ScreenController.error("bridge_stopped").toString()
                 // Package queries and label resources must not block UI, TTS init or screen actions.
                 if (action == "apps") return readAppCatalog(candidate).toString()
+                val waitMs = if (action in listOf("screen", "click", "long-click", "scroll", "set-text")) 3500L else 1200L
+                val deadline = SystemClock.elapsedRealtime() + waitMs
                 val task = FutureTask<String> {
                     if (server !== candidate || !candidate.isRunning) ScreenController.error("bridge_stopped").toString()
-                    else executeCommand(action, body).toString()
+                    else executeCommand(action, body, deadline).toString()
                 }
                 mainHandler.post(task)
-                return try { task.get(if (action == "screen") 3500L else 1200L, TimeUnit.MILLISECONDS) }
+                return try { task.get(waitMs, TimeUnit.MILLISECONDS) }
                 catch (_: TimeoutException) {
                     task.cancel(false)
                     mainHandler.removeCallbacks(task)
@@ -101,7 +104,7 @@ class BridgeAccessibilityService : AccessibilityService() {
         }
     }
 
-    private fun executeCommand(action: String, body: String): JSONObject {
+    private fun executeCommand(action: String, body: String, deadline: Long): JSONObject {
         if (getSystemService(KeyguardManager::class.java).isKeyguardLocked && action != "stop_speech")
             return ScreenController.error("phone_locked")
         val args = try { JSONObject(body) } catch (_: Exception) { return ScreenController.error("invalid_json") }
@@ -116,7 +119,7 @@ class BridgeAccessibilityService : AccessibilityService() {
                     (action == "set-text" && !string("text", 2000)) ||
                     (action == "scroll" && args.optString("direction") !in listOf("forward", "backward")))
                     return ScreenController.error("invalid_arguments")
-                screen.act(action, args)
+                screen.act(action, args, deadline)
             }
             "device" -> deviceState()
             "open-package" -> {
