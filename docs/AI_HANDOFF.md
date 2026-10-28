@@ -47,3 +47,9 @@ Do not repeat Hermes installation or Telegram pairing. Resolved first-run SDK is
 
 ## Recorded Hermes environment context (prior conversation, not freshly verified)
 Hermes executable /usr/local/bin/hermes, Python 3.14.4, package location /usr/local/lib/python3.14/dist-packages, reported venv /usr/local/lib/python3.14/dist-packages/venv. Previously recorded gateway command hermes gateway run produced Telegram replies. Current gateway process/health unknown. No exact distro alias or launch script found. Latest upstream docs may describe a different Hermes version; v0.15.2 tag lookup returned 404, so inspect installed code/help before selecting a plugin/MCP mechanism.
+
+## Latest installed-runtime evidence (supersedes prior distro discovery task)
+User ran proot-distro list: installed alias ubuntu.
+User ran proot-distro login ubuntu -- bash -lc 'command -v hermes; hermes --version; hermes --help'. Output directly reports /usr/local/bin/hermes, Hermes Agent v0.15.2 (2026.5.29.2), project /usr/local/lib/python3.14/dist-packages, Python 3.14.4, OpenAI SDK 2.24.0. Commands include plugins, mcp, acp, chat and gateway. The CLI advertises one-shot mode as auto-bypassing approvals; do not choose that as the default app integration without explicit permission/confirmation design.
+Exact current stopping point: installed runtime and distro entry confirmed by user command output; plugin/MCP subcommand capabilities not yet inspected. No adapter installed, no Hermes config changes.
+Single next action: run proot-distro login ubuntu -- bash -lc 'hermes plugins --help; hermes mcp --help' and review output before choosing integration. The native shell command only requests help; do not upgrade/reinstall or restart/reconfigure Telegram.

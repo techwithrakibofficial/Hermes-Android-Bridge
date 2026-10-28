@@ -26,3 +26,6 @@ Protocol test coverage: bind address, token format/auth, status, browser-origin 
 Local javac execution was unavailable; CI performed the tests with JDK17. No emulator/device action tests ran. Accepted means Android accepted a request; verify the phone screen.
 
 Latest user report: Back works; after Stop, status fails to connect. Record as user-reported phone evidence. Next action is read-only installed PRoot distro inventory, then Hermes integration inspection; no reinstall or Telegram changes.
+
+## Installed Hermes inspection
+User supplied direct output: PRoot distro alias ubuntu; /usr/local/bin/hermes; v0.15.2 (2026.5.29.2); Python 3.14.4; OpenAI SDK 2.24.0; project /usr/local/lib/python3.14/dist-packages. Top-level CLI includes plugins and mcp. Adapter contract and live gateway status remain unverified. Next read-only check is plugins/mcp --help, not install/update.
