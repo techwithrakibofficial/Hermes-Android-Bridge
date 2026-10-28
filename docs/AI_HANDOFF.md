@@ -97,15 +97,29 @@ are not evidence of an app's safety or behavior; no action on them is authorized
 No Telegram home channel is set; /sethome in the verified private chat is optional
 for future scheduled delivery and unrelated to current bridge health.
 
+## Latest blocker — OpenRouter output-credit preflight
+User's next safe UI test invoked open_package, screen and scroll several times,
+then failed at the model provider with HTTP402/openrouter_credits: requested output
+ceiling131072 exceeds current allowance. Tool names alone do not prove accepted
+or visible UI results. No Draft/Counter or click/type success was provided.
+Do not replay the whole action sequence blindly or reinstall the APK.
+
+Exact Hermes upstream v2026.5.29.2 agent/agent_init.py reads model.max_tokens from
+config.yaml when no explicit constructor cap is supplied. OpenRouter official
+limits docs confirm output maximum contributes to estimated/preflight cost.
+Planned cap4096 with private config backup preserves current model/provider and
+other configuration. Temporary-file validation passed for dict and legacy string
+model formats; actual phone save and post-change API request remain untested.
+This does not add credits, change inference pricing or guarantee unlimited free use.
+
 ## Single next action
-In the existing Telegram bot, open the exact Bridge package
-io.github.techwithrakibofficial.hermesbridge, observe and click Open safe control
-test (scroll using fresh targets if needed). Type পরীক্ষা সফল into Test message,
-click Increase test counter once, reobserve and report actual Draft/Counter.
-Stop on a failed step; no actions outside this test activity. User should verify
-visible draft and Counter:1. No reinstall/re-pair/new setup required now.
-Then test audible speech. Current saved language is en-US; Bengali speech needs
-selecting/testing Bengali in the app. voice_ready alone is not proof of sound.
+User Ctrl+C foreground gateway. Run backed-up output-limit command from
+ docs/PROVIDER_402.md; confirm PASS model.max_tokens=4096. Restart saved private
+hermes-with-android gateway run, send /new in Telegram, request a brief text-only
+reply first. If successful, make one read-only screen request before resuming safe
+UI tests. No bridge restart/pairing, provider/key/model change needed for this step.
+Current TTS language remains en-US; audible speech and safe-test Draft/Counter
+are still pending. Stop repeating402 requests until config changes are loaded.
 
 ## Still unimplemented or unverified
 - No live carrier/WhatsApp call audio, Telecom dialer role, incoming-call answer/
