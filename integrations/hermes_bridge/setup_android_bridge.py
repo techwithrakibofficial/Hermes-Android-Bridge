@@ -20,10 +20,10 @@ import time
 import urllib.request
 import venv
 
-SOURCE = "https://raw.githubusercontent.com/techwithrakibofficial/Hermes-Android-Bridge/0fa73edc21dcf6597b04026ac8416270432517b1/integrations/hermes_bridge/bridge_mcp.py"
-SOURCE_SHA256 = "49fe8a9b8c645fcd68b5faf0ba8a5dd16021acc708e5db21f75ae8a9786149a0"
+SOURCE = "https://raw.githubusercontent.com/techwithrakibofficial/Hermes-Android-Bridge/d0d742277c6b1850edf82305c13ef41a51afcbfd/integrations/hermes_bridge/bridge_mcp.py"
+SOURCE_SHA256 = "6ee58693062578f057b67aad4b720f2a664a0d13ef992643404686f386d749b0"
 SERVER_NAME = "android-bridge"
-EXPECTED_TOOLS = {"android_bridge_status", "android_home", "android_back"}
+EXPECTED_TOOLS = {"android_bridge_status", "android_home", "android_back", "android_open_settings", "android_open_app"}
 SDK_REQUIREMENT = "mcp==1.26.0"  # Exact optional dependency of Hermes v2026.5.29.2.
 
 
@@ -165,7 +165,10 @@ def main(install_sdk=False):
                 adapter.BridgeClient().request("android_bridge_status")
         except adapter.BridgeError as error:
             raise SetupError(str(error)) from None
-        print("PASS: Ubuntu can reach Android; current/private pairing verified.", flush=True)
+        status = adapter.BridgeClient().request("android_bridge_status")
+        if not {"home", "back", "settings", "open_app"}.issubset(set(status.get("allowed_actions", []))):
+            raise SetupError("APP_UPDATE_REQUIRED: install Bridge APK0.3.0 and start/pair its local bridge before this adapter update.")
+        print("PASS: Ubuntu can reach Android; pairing and Settings/app capabilities verified.", flush=True)
         backup = config_path.with_name("config.yaml.before-android-bridge-" + str(time.time_ns()))
         shutil.copy2(config_path, backup)
         backup.chmod(0o600)
@@ -177,13 +180,13 @@ def main(install_sdk=False):
             tools = _probe_single_server(SERVER_NAME, candidate)
             names = {name for name, _ in tools}
             if not EXPECTED_TOOLS.issubset(names):
-                raise SetupError("Disabled adapter still cannot discover all 3 tools. It was not enabled.")
+                raise SetupError("Disabled adapter still cannot discover all required tools. It was not enabled.")
             if not tools_allowed(candidate):
                 raise SetupError("Existing tool filters exclude required Android tools. Filters were not changed.")
             _save_mcp_server(SERVER_NAME, candidate)
             print("PASS: existing disabled Android entry verified and enabled.", flush=True)
         if existing is None:
-            print("NEXT: Hermes will discover 3 tools. Choose Y to enable them.", flush=True)
+            print("NEXT: Hermes will discover 5 tools. Choose Y to enable them.", flush=True)
             # Let the installed CLI own registration and tool-selection behavior.
             subprocess.run(hermes_command("mcp", "add", SERVER_NAME, "--command", sys.executable,
                                          "--args", str(path)), check=True)
@@ -193,10 +196,10 @@ def main(install_sdk=False):
             raise SetupError("Adapter was not saved/enabled. Gateway not started. Config backup is available.")
         tools = _probe_single_server(SERVER_NAME, entry)
         if not EXPECTED_TOOLS.issubset({name for name, _ in tools}):
-            raise SetupError("Hermes did not discover all 3 Android tools. Gateway not started.")
+            raise SetupError("Hermes did not discover all 5 Android tools. Gateway not started.")
         if not tools_allowed(entry):
-            raise SetupError("Some Android tools were filtered out. Enable the 3 tools before continuing.")
-        print("PASS: Hermes MCP discovery verified: android_bridge_status, android_home, android_back.", flush=True)
+            raise SetupError("Some Android tools were filtered out. Enable all 5 tools before continuing.")
+        print("PASS: Hermes MCP discovery verified: status, home, back, open_settings, open_app.", flush=True)
         launcher = save_launcher()
         print("LAUNCHER: " + str(launcher) + " gateway run", flush=True)
         print("STARTING: gateway. Keep Termux and the app bridge running. Test bridge status in Telegram first.", flush=True)

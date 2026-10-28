@@ -26,9 +26,9 @@ Local coding/testing:
 - Recovery helper integrations/hermes_bridge/recover_gateway.py added.13 recovery tests plus17 adapter tests =30 tests passed locally on Python3.12 using temp files/fake Telegram HTTP. No real account or phone recovery test yet.
 
 ## 4. Exact stopping point
-User supplied phone output confirming private Python MCP SDK1.26.0 installation SUCCESS on Python3.14/aarch64; adapter SHA256 verified; Ubuntu→Android current/private pairing verified; owned disabled entry verified/enabled; actual installed Hermes MCP client discovered android_bridge_status/android_home/android_back. Reusable launcher saved at /root/.local/share/hermes-android-bridge/hermes-with-android.
-Helper started the foreground gateway through private Python. A missing user D-Bus/XDG message appeared, followed by the Gateway Starting banner. This is not proof of final gateway readiness. No Telegram tool invocation or visible Android action through Hermes has yet been reported. Earlier Telegram AI replies and direct native Termux Back/Stop tests passed by user report.
-Current priority: keep gateway and Android local bridge running, start a fresh Telegram session (/new), request an actual android_bridge_status tool call, then android_home if status is ready. No more dependency installation or setup repetition.
+User replied All done after Telegram android_bridge_status/Home test instructions: record user-reported completion of that round trip. No independent phone observation.
+User clarified the full goal: broad phone operation and problem diagnosis, not just preconfigured action buttons. See docs/PHONE_AGENT_GOAL.md. Preserve current working foundations and continue sequentially.
+Prepared0.3.0 Android Settings/allowlisted-app launches and two new MCP tools.51 Python tests pass locally; Java socket tests and Android compile/lint await CI. Screen reading/click/scroll/type/diagnostic autonomy remain future work, not implemented in this build.
 
 ## 5. Outstanding/blockers
 1. Stop current foreground gateway, start Android app local bridge, copy pairing export into native Termux, then run the pinned setup command with explicit token forwarding to Ubuntu.
@@ -38,7 +38,7 @@ Current priority: keep gateway and Android local bridge running, start a fresh T
 5. Android may kill Termux processes; no background-uptime guarantee.
 
 ## 6. Single next action
-In Telegram send /new, then explicitly ask Hermes to call android_bridge_status and return the tool result. If ready, ask it to call android_home and verify the launcher appears. Report the agent's result and visible screen behavior. Keep the same Android bridge session alive; restart changes its token and requires re-pairing.
+Verify0.3.0 CI/build/release. Then install the APK, start its bridge, copy fresh pairing export into native Termux and run the updated pinned setup helper. It reuses private Python, checks Settings/app capabilities and discovers5 tools. Test real Settings and WhatsApp launches from Telegram. Continue screen observation/click/type milestones after launch tests, following docs/PHONE_AGENT_GOAL.md.
 
 ## 7. Files/verification limits
 - integrations/hermes_bridge/RECOVERY.md: scope, checks, safe diagnostics and backups.
@@ -60,3 +60,6 @@ Updated setup SHA256 c7c0900286c845896f3c6ff46ce619ffe673bc3fbdb129c4f87ad1e9b24
 
 ## Latest confirmed phone evidence
 User log: Successfully installed mcp-1.26.0 in private runtime; SDK imports PASS; adapter integrity PASS; pairing PASS; disabled entry enabled PASS; Hermes MCP discovery PASS for all3 tools; gateway launch attempted. This supersedes prior phone-SDK/discovery-pending notes. Future restart: proot-distro login ubuntu -- /root/.local/share/hermes-android-bridge/hermes-with-android gateway run. Telegram→tool→Android round-trip remains unverified until the next test.
+
+## 0.3 staged source and expanded goal
+Adapter source pinned to commit d0d742277c6b1850edf82305c13ef41a51afcbfd with SHA2566ee58693062578f057b67aad4b720f2a664a0d13ef992643404686f386d749b0. Updated setup helper SHA256 381b4a1aea4ba8768b30e052dc3dd5dc7353f14657b657f0e81cfe2b1d22efaa; it requires APK0.3 capabilities and expects5 tools. Existing gateway/private SDK1.26 and token file remain in place. New APK session token requires pairing renewal. Actual new app-opening results are unverified.51 local Python tests passed; platform build pending. Development debug key caching starts with this build; it does not recover the prior runner's signing key or guarantee cache retention.
