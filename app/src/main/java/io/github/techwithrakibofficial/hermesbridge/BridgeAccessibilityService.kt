@@ -65,7 +65,7 @@ class BridgeAccessibilityService : AccessibilityService() {
                     else executeCommand(action, body).toString()
                 }
                 mainHandler.post(task)
-                return try { task.get(1200, TimeUnit.MILLISECONDS) }
+                return try { task.get(if (action == "screen") 3500L else 1200L, TimeUnit.MILLISECONDS) }
                 catch (_: TimeoutException) {
                     task.cancel(false)
                     mainHandler.removeCallbacks(task)
@@ -88,7 +88,7 @@ class BridgeAccessibilityService : AccessibilityService() {
             appCatalog = AppCatalog { loadAppCatalog() }.also { it.warm() }
             lastDispatchError = "none"
             candidate.start()
-            remoteVoice = VoiceOutput(this)
+            remoteVoice = createRemoteVoice()
             bridgeState.value = LocalBridgeState(true, candidate.token, "Listening on 127.0.0.1:$PORT")
         } catch (_: Exception) {
             appCatalog?.close()
@@ -133,7 +133,7 @@ class BridgeAccessibilityService : AccessibilityService() {
             }
             "speak" -> {
                 if (!keys("text") || !string("text", 2000)) return ScreenController.error("invalid_arguments")
-                val voice = remoteVoice ?: VoiceOutput(this).also { remoteVoice = it }
+                val voice = remoteVoice ?: createRemoteVoice().also { remoteVoice = it }
                 if (!voice.ready) return ScreenController.error("voice_warming_up_try_speak_after_ready")
                 ScreenController.accepted(voice.speak(args.getString("text")))
             }
@@ -200,6 +200,8 @@ class BridgeAccessibilityService : AccessibilityService() {
             .put("last_dispatch_error", lastDispatchError)
             .put("notice", "Basic state only; this does not diagnose hardware, carrier or app failures.")
     }
+
+    private fun createRemoteVoice(): VoiceOutput = VoiceOutput(this).also { it.refresh() }
 
     private fun launchSettings(): Boolean = launchIntent(Intent(Settings.ACTION_SETTINGS))
 
@@ -273,7 +275,7 @@ class BridgeAccessibilityService : AccessibilityService() {
             val service = instance ?: return
             if (service.server?.isRunning == true) {
                 service.remoteVoice?.close()
-                service.remoteVoice = VoiceOutput(service)
+                service.remoteVoice = service.createRemoteVoice()
             }
         }
         fun stopBridge() { instance?.stopSession() }

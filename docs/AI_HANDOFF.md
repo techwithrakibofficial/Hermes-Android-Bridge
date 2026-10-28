@@ -68,7 +68,12 @@ permission, locked screen or EMI cause.0.4.1 moves catalog to one background
 loader, caps and loads labels once, shares pending work and caches30s. Read wait
 2.8s returns apps_loading if unfinished. Exact-package open no longer queries
 all installed apps. Specific main-dispatch codes and voice_status/catalog state
-added to device diagnostics. Existing19-tool adapter remains compatible.
+added to device diagnostics. Also confirmed remote VoiceOutput objects were
+constructed without calling refresh/startEngine; service now starts engine on
+creation/reload/fallback. MainActivity's manual voice had its own onResume refresh,
+explaining why its earlier test could work while remote voice_ready stayed false.
+Screen observation has a separate3.5s dispatch wait; mutation wait stays1.2s.
+Existing19-tool adapter remains compatible. Actual updated TTS remains untested.
 
 ## Single next action
 Build/lint/test0.4.1, then publish the APK and update this checkpoint. After install,
