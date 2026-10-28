@@ -32,3 +32,6 @@ User says all initial companion functions work, but voice is too fast to underst
 Implemented slower default 0.70, slider range 0.25–1.25, saved preference across restarts, stop playback when adjusting, reset control and setSpeechRate error handling. VersionCode 2. New compile/lint and phone speed/persistence tests pending.
 
 0.1.1 verification: compile/lint, artifact and publication PASSED in run 40606075816 at commit 31bb9f4937754a14c0f23fdcf6105fac2fc9ea2e. Release dev-3 includes Hermes-Bridge-0.1.1.apk (9,287,940 bytes). Phone speed adjustment and preference persistence remain pending.
+
+## 0.1.2 voice-quality correction
+User confirms slider helped speed; reports unintelligible voice quality. Phone engine/voice not identified. Installed-engine and language-matched voice picker, preview, neutral pitch, voice-data handling and explicit online opt-in implemented. Compile/lint and actual phone listening/persistence tests pending. No claim of humanlike quality is made.

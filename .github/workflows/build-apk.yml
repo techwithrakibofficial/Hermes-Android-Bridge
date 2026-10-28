@@ -34,9 +34,9 @@ jobs:
       - name: Prepare phone download
         run: |
           mkdir -p dist
-          cp app/build/outputs/apk/debug/app-debug.apk dist/Hermes-Bridge-0.1.1.apk
+          cp app/build/outputs/apk/debug/app-debug.apk dist/Hermes-Bridge-0.1.2.apk
           cd dist
-          sha256sum Hermes-Bridge-0.1.1.apk > SHA256SUMS.txt
+          sha256sum Hermes-Bridge-0.1.2.apk > SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
           name: Hermes-Bridge-APK
@@ -66,4 +66,4 @@ jobs:
           BUILD_SHA: ${{ github.sha }}
           RUN_NUMBER: ${{ github.run_number }}
         run: |
-          gh release create "dev-${RUN_NUMBER}" dist/* --target "$BUILD_SHA" --prerelease --title "Hermes Bridge 0.1.1 • device test ${RUN_NUMBER}" --notes 'Development debug APK. Compose setup, manual Home/Back Accessibility tests and Android TTS test only. Hermes connection is not implemented yet. User reports initial companion tests work; speech was too fast. This build adds a saved speech speed slider and slower default. New speed behavior awaits phone verification. Debug signing keys can differ between CI runs; update-in-place is not guaranteed.'
+          gh release create "dev-${RUN_NUMBER}" dist/* --target "$BUILD_SHA" --prerelease --title "Hermes Bridge 0.1.2 • device test ${RUN_NUMBER}" --notes 'Development APK: choose installed TTS engine, Bengali or English, and a saved voice. Preview uses matching language and neutral pitch. Offline voices by default; online voices require opt-in and may send text to the engine service. Voice naturalness needs device listening tests. Hermes integration is not implemented yet. Debug signing may differ from previous builds.'

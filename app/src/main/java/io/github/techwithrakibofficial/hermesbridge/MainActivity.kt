@@ -5,7 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
 import android.speech.tts.TextToSpeech
-import android.speech.tts.UtteranceProgressListener
+import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -24,29 +24,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import java.util.Locale
 
 class MainActivity : ComponentActivity() {
-    private var tts: TextToSpeech? = null
-    private var ttsReady by mutableStateOf(false)
-    private var speechRate by mutableFloatStateOf(0.70f)
-    private val voicePreferences by lazy { getSharedPreferences("voice", MODE_PRIVATE) }
-    private var speechState by mutableStateOf("Initializing speech engine…")
+    private lateinit var voice: VoiceOutput
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        speechRate = voicePreferences.getFloat("speech_rate", 0.70f).coerceIn(0.25f, 1.25f)
-        tts = TextToSpeech(this) { result ->
-            runOnUiThread {
-                val language = if (result == TextToSpeech.SUCCESS) tts?.setLanguage(Locale.US) else null
-                ttsReady = language != null && language >= TextToSpeech.LANG_AVAILABLE
-                if (ttsReady) tts?.setSpeechRate(speechRate)
-                speechState = if (ttsReady) "Speech engine ready" else "Speech unavailable. Check installed TTS engine/language."
-            }
-        }
-        tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-            override fun onStart(utteranceId: String?) = updateSpeech("Speaking…")
-            override fun onDone(utteranceId: String?) = updateSpeech("Speech completed. Confirm you heard it.")
-            @Deprecated("Required by Android")
-            override fun onError(utteranceId: String?) = updateSpeech("Speech failed")
-        })
+        voice = VoiceOutput(this)
         setContent {
             MaterialTheme(colorScheme = darkColorScheme(
                 primary = Color(0xFF5EEAD4), background = Color(0xFF0B1220),
@@ -57,13 +39,23 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun updateSpeech(message: String) { runOnUiThread { speechState = message } }
-
     @Composable
     private fun BridgeScreen() {
         val connected by BridgeAccessibilityService.connected.collectAsStateWithLifecycle()
         var lastAction by rememberSaveable { mutableStateOf("No action requested") }
         var showDisclosure by remember { mutableStateOf(false) }
+        var showEngines by remember { mutableStateOf(false) }
+        var showVoices by remember { mutableStateOf(false) }
+        if (showEngines) VoicePicker("Choose speech engine",
+            voice.engines.map { it.label }, { showEngines = false }) {
+            voice.selectEngine(voice.engines[it].name)
+            showEngines = false
+        }
+        if (showVoices) VoicePicker("Choose voice",
+            voice.voices.map { voice.voiceLabel(it) }, { showVoices = false }) {
+            voice.selectVoice(voice.voices[it])
+            showVoices = false
+        }
         Surface(modifier = Modifier.fillMaxSize()) {
             Column(Modifier.safeDrawingPadding().verticalScroll(rememberScrollState()).padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp)) {
@@ -71,7 +63,7 @@ class MainActivity : ComponentActivity() {
                     style = MaterialTheme.typography.labelLarge)
                 Text("Your agent.\nYour phone.", style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Bold)
-                Text("Companion setup • v0.1.1", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Companion setup • v0.1.2", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 StatusCard("01  Accessibility", if (connected) "Service connected" else "Service not connected") {
                     Text("Home ও Back action পরীক্ষা করতে এই service নিজে enable করুন। এই version screen content পড়ে না।")
                     Button(onClick = { showDisclosure = true }, modifier = Modifier.fillMaxWidth()) {
@@ -89,40 +81,40 @@ class MainActivity : ComponentActivity() {
                     }
                     Text(lastAction, style = MaterialTheme.typography.bodySmall)
                 }
-                StatusCard("02  Voice output", speechState) {
-                    Text("এটি Android app-এর আলাদা TTS test। আগের Termux TTS configuration পরিবর্তন করবে না।")
-                    Text("কথার গতি: ${String.format(Locale.US, "%.2f", speechRate)}", style = MaterialTheme.typography.titleSmall)
-                    Text("বামে নিলে ধীরে, ডানে নিলে দ্রুত বলবে। Speed বদলে আবার Test চাপুন।", style = MaterialTheme.typography.bodySmall)
-                    Slider(
-                        value = speechRate,
-                        onValueChange = {
-                            tts?.stop()
-                            speechRate = it
-                            speechState = if (ttsReady) "Speed changed. Tap Test voice output." else "Speech engine not ready"
-                        },
-                        onValueChangeFinished = {
-                            voicePreferences.edit().putFloat("speech_rate", speechRate).apply()
-                        },
-                        valueRange = 0.25f..1.25f,
-                        steps = 19
-                    )
+                StatusCard("02  Voice output", voice.status) {
+                    Text("সুন্দর উচ্চারণের জন্য সঠিক language ও voice বাছুন। Voice-এর মান installed engine-এর ওপর নির্ভর করে।")
+                    Text("Engine: ${voice.engineLabel}", style = MaterialTheme.typography.titleSmall)
+                    OutlinedButton(enabled = voice.engines.isNotEmpty(), onClick = { showEngines = true },
+                        modifier = Modifier.fillMaxWidth()) { Text("Choose speech engine") }
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        FilterChip(selected = voice.language == "bn-BD", onClick = { voice.selectLanguage("bn-BD") }, label = { Text("বাংলা") })
+                        FilterChip(selected = voice.language == "en-US", onClick = { voice.selectLanguage("en-US") }, label = { Text("English") })
+                    }
+                    Text(voice.selectedVoice?.let { voice.voiceLabel(it) } ?: "No usable voice selected",
+                        style = MaterialTheme.typography.bodySmall)
+                    OutlinedButton(enabled = voice.voices.isNotEmpty(), onClick = { showVoices = true },
+                        modifier = Modifier.fillMaxWidth()) { Text("Choose voice • ${voice.voices.size} available") }
+                    Row {
+                        Checkbox(checked = voice.allowNetwork, onCheckedChange = { voice.setNetworkAllowed(it) })
+                        Text("Online voice allow করুন। Engine text online পাঠাতে পারে এবং internet লাগবে।",
+                            modifier = Modifier.padding(top = 12.dp), style = MaterialTheme.typography.bodySmall)
+                    }
+                    Text("কথার গতি: ${String.format(Locale.US, "%.2f", voice.rate)}", style = MaterialTheme.typography.titleSmall)
+                    Slider(value = voice.rate, onValueChange = { voice.updateRate(it) },
+                        onValueChangeFinished = { voice.saveRate() }, valueRange = 0.25f..1.25f, steps = 19)
+                    TextButton(onClick = { voice.updateRate(0.70f); voice.saveRate() }) { Text("Reset speed • 0.70") }
+                    Button(enabled = voice.ready, onClick = { voice.speakTest() },
+                        modifier = Modifier.fillMaxWidth()) { Text("Test selected voice") }
+                    TextButton(onClick = { voice.stop() }) { Text("Stop speech") }
+                    OutlinedButton(onClick = { openVoiceData() }, modifier = Modifier.fillMaxWidth()) {
+                        Text("Install voice data")
+                    }
                     TextButton(onClick = {
-                        tts?.stop()
-                        speechRate = 0.70f
-                        voicePreferences.edit().putFloat("speech_rate", speechRate).apply()
-                        speechState = if (ttsReady) "Slower default restored. Tap Test voice output." else "Speech engine not ready"
-                    }) { Text("Reset speed • 0.70") }
-                    Button(enabled = ttsReady, onClick = {
-                        if (tts?.setSpeechRate(speechRate) != TextToSpeech.SUCCESS) {
-                            speechState = "Speech engine could not apply this speed"
-                        } else {
-                            speechState = "Speech queued…"
-                            val result = tts?.speak("Hermes Android Bridge is ready for device testing.",
-                                TextToSpeech.QUEUE_FLUSH, null, "device-test")
-                            if (result != TextToSpeech.SUCCESS) speechState = "Speech could not be queued"
-                        }
-                    }, modifier = Modifier.fillMaxWidth()) { Text("Test voice output") }
-                    TextButton(onClick = { tts?.stop(); speechState = "Speech stopped" }) { Text("Stop speech") }
+                        openSettingsIntent(Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.google.android.tts")))
+                    }) { Text("Google voice • install / update") }
+                    TextButton(onClick = { voice.refresh() }) { Text("Refresh engines & voices") }
+                    Text("Voice ও speed save থাকবে। Termux বা system TTS setting পরিবর্তন করা হয় না।",
+                        style = MaterialTheme.typography.bodySmall)
                 }
                 StatusCard("03  Hermes connection", "Not connected • next milestone") {
                     Text("Secure local bridge ও chat/voice input এখনও যুক্ত হয়নি। এই app থেকে এখন Hermes command পাঠানো যাবে না।")
@@ -155,11 +147,38 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onStop() {
-        tts?.stop()
-        if (ttsReady) speechState = "Speech engine ready"
-        super.onStop()
+    @Composable
+    private fun VoicePicker(title: String, items: List<String>, dismiss: () -> Unit, select: (Int) -> Unit) {
+        AlertDialog(onDismissRequest = dismiss, title = { Text(title) },
+            text = {
+                Column(Modifier.heightIn(max = 360.dp).verticalScroll(rememberScrollState())) {
+                    items.forEachIndexed { index, label ->
+                        TextButton(onClick = { select(index) }, modifier = Modifier.fillMaxWidth()) { Text(label) }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = dismiss) { Text("Close") } })
     }
 
-    override fun onDestroy() { tts?.shutdown(); tts = null; super.onDestroy() }
+    private fun openSettingsIntent(intent: Intent) {
+        try { startActivity(intent) }
+        catch (_: ActivityNotFoundException) { openGeneralSettings() }
+        catch (_: SecurityException) { openGeneralSettings() }
+    }
+
+    private fun openGeneralSettings() {
+        try { startActivity(Intent(Settings.ACTION_SETTINGS)) }
+        catch (_: ActivityNotFoundException) { android.widget.Toast.makeText(this, "Settings unavailable", android.widget.Toast.LENGTH_LONG).show() }
+        catch (_: SecurityException) { android.widget.Toast.makeText(this, "Settings blocked by device policy", android.widget.Toast.LENGTH_LONG).show() }
+    }
+
+    private fun openVoiceData() {
+        val intent = Intent(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA)
+        if (voice.engineName.isNotBlank()) intent.setPackage(voice.engineName)
+        openSettingsIntent(intent)
+    }
+
+    override fun onResume() { super.onResume(); voice.refresh() }
+    override fun onStop() { voice.stop(); super.onStop() }
+    override fun onDestroy() { voice.close(); super.onDestroy() }
 }

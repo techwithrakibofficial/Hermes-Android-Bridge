@@ -53,3 +53,8 @@ Successful run: https://github.com/techwithrakibofficial/Hermes-Android-Bridge/a
 Release: https://github.com/techwithrakibofficial/Hermes-Android-Bridge/releases/tag/dev-3
 APK: https://github.com/techwithrakibofficial/Hermes-Android-Bridge/releases/download/dev-3/Hermes-Bridge-0.1.1.apk
 The prior 0.1.0 CI evidence above is historical. Latest app version is 0.1.1 (versionCode 2). No device speed or persistence result has yet been reported for this patch.
+
+## Current patch — 0.1.2 (supersedes prior stopping point)
+User confirms speed slider improved speed, but current voice is strange/unintelligible. Speed adjustment itself is user-verified, not an automated listening test. Actual engine/voice on the phone remains unknown. Old code forced English US with no voice selection.
+Implemented installed engine chooser (prefer installed Google engine on first selection), Bengali/English language and matching preview, saved voice picker, quality/locale sorting of engine voices, neutral pitch 1.0, offline default and explicit online opt-in, voice-data install/refresh and error states. Saved voice uses engine/language/network-mode keys. Never use English voice as a silent fallback for missing Bengali data. No API keys or bundled natural voice model. Naturalness is not guaranteed and needs listening on phone. No Hermes/Termux/Telegram changes.
+Exact stopping point: compiling/linting version 0.1.2 (versionCode 3). Single next action: verify CI, then install/update Google engine and Bengali voice data if needed, select/preview a Bengali voice on the phone.
