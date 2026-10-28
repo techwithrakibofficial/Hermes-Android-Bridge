@@ -24,3 +24,12 @@ by a subsequent Draft: পরীক্ষা সফল read. Counter click accep
 Counter:0; increment remains unresolved, no automatic retry made. Need the user's
 visible value in the existing activity before assuming latency/cache/targeting or
 patching. Scroll and audible speech still have no confirmed successful result.
+
+## Subsequent visible/audio confirmation
+User personally inspected the SAME test activity: Draft পরীক্ষা সফল, Counter1.
+This supersedes the earlier unresolved counter value0 read; no second click was
+requested. Counter increment completed, with delayed observation/update apparent
+but exact cause unknown. Use read-only settling/reobservation, not blind retries.
+User confirmed English speech audible and then Bengali speech audible. Pronunciation
+quality/feminine sound, mic input, real-app scrolling/sending/calling and live call
+audio remain unverified or unimplemented as documented. No new code/build needed.

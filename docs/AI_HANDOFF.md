@@ -153,13 +153,27 @@ No raw node payload, screenshot or user's independent visible counter observatio
 has been supplied. UI/Accessibility update latency, stale child reads or targeting
 are hypotheses; no specific cause established and no new patch warranted yet.
 
+## User-visible confirmation superseding the unresolved counter
+User returned to the existing activity and personally reported title Hermes control
+test, Draft: পরীক্ষা সফল, Counter:1. Therefore the single increment completed;
+prior immediate Accessibility read reported0. The precise timing/cache mechanism
+is unproven. After accepted actions, allow settling and perform a read-only
+reobservation before considering any additional mutation. Do not blind re-click.
+User also confirmed the requested English android_speak was audible, then after
+Bengali-selection instructions confirmed Bengali speech was audible. This proves
+reported audio output, not a measured pronunciation quality, confirmed voice
+gender, microphone input, continuous conversation or phone-call audio.
+
 ## Single next action
-Do not click again or reopen the test through its button, which could create a new
-activity/counter. Ask user to return to the EXISTING Hermes Bridge task via Android
-Recents, keep the same Hermes control test activity, and report the visible Draft
-and Counter. If1, compare prior read timing; if0, inspect exact clickable target
-and raw read data before any intentional second click. Do not infer success from
-accepted. Preserve provider output cap and working pairing; no reinstall needed.
+Core phone acceptance now includes exact-package launch, screen reads, pinned
+button click/test navigation, Bengali editable text, visible counter increment
+and audible English/Bengali TTS. No reinstall/update/re-pair is needed.
+Start an ordinary requested real workflow, preferably read-only Settings battery
+usage inspection with exact screen/result verification and no setting changes.
+Scroll in a real app and app-specific send/call workflows remain unverified.
+Keep max_tokens cap and existing provider/Telegram/private launcher. Check-ins
+remain unscheduled; new home-channel/timing/delivery setup must be verified if
+requested. No unsupported general-autonomy or all-features-complete claim.
 
 ## Still unimplemented or unverified
 - No live carrier/WhatsApp call audio, Telecom dialer role, incoming-call answer/
@@ -169,8 +183,9 @@ accepted. Preserve provider output cap and working pairing; no reinstall needed.
   repair workflows need individual real-phone tests. Custom/protected UI may fail.
 - Proactive Telegram check-ins use existing Hermes cron tools and need verified
   timezone/private-chat delivery; no jobs configured or delivery tested here.
-- Feminine voice preference is profile-level; installed TTS voices must be
-  previewed/selected on phone. Standard Voice API has no portable gender field.
+- Feminine voice preference is profile-level; English/Bengali speech is reported
+  audible, but chosen gender/clarity are not independently confirmed. Installed
+  voices must be previewed/selected; standard Voice API has no portable gender field.
 - No guarantees of unlimited free inference or Android background uptime.
 - Debug signing key cache began in0.3; eviction can require Bridge-only reinstall.
 
