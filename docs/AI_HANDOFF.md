@@ -44,14 +44,22 @@ Optional --companion setup flag adds a backed-up marked block to existing SOUL.m
 other personality content preserved. No cron job is created during install.
 Read docs/COMPANION_0_4.md for full behavior, limits and phone acceptance tests.
 
-Local59 Python tests passed (stdlib/fake HTTP/temp files). Android build/lint,
-protocol CI and actual0.4 phone actions are pending at this checkpoint. Do not
+Local59 Python tests passed (stdlib/fake HTTP/temp files). Python3.12/3.14 CI
+run40642075403 passed59 each. Android run40642075456 passed compile/lint,46
+fake-handler real-socket checks and publication as dev-12. APK9,354,144 bytes;
+SHA2562671a19802bd77954172444eaef79c099e7655841cbab6c7315ca9321ac59fed.
+Actual0.4 phone actions remain pending. Do not
 claim broad messaging/call automation is phone-tested or a final universal agent.
 
 ## Single next action
-Run GitHub Actions for0.4 and fix any actual compile/lint/test failures. Publish
-APK only on passing build; prepare pinned adapter/setup upgrade guide, then have
-user perform safe control-test activity. Update this handoff with actual CI links.
+Follow docs/UPGRADE_0_4.md: install dev-12 APK, start bridge and enable screen
+control, copy fresh pairing export into native Termux, run the pinned updater
+with --install-sdk --companion, then test the safe control activity via Telegram.
+No new Termux session required: Ctrl+C the current foreground gateway first.
+Code head d616cfb14878b1a7652212e2de49207118f9490f; adapter pin
+b08f55fd44255222d6a787472d944fd93fb64656,
+SHA2562b5c1b1df0b5daa781749941950c271d99750093bfb6547a754b944a00b23902.
+Setup SHA2568bb988ef62eda3b4c2828fb3f8d1cc707f130d635ccae946a4624b6b8e841908.
 
 ## Still unimplemented or unverified
 - No live carrier/WhatsApp call audio, Telecom dialer role, incoming-call answer/

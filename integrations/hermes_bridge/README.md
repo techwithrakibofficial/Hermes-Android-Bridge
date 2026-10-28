@@ -1,40 +1,55 @@
-# Hermes MCP adapter (staged integration)
+# Hermes Android MCP integration0.4
 
-This separate stdlib-only Python adapter exposes three legacy MCP stdio tools to Hermes: android_bridge_status, android_home and android_back. It never edits Hermes or Telegram files. Android app 0.2.0 already provides the needed endpoints.
+The stdlib-only legacy MCP stdio adapter exposes19 Android tools. The existing
+Hermes client needs mcp==1.26.0 in a private Python environment; the pinned updater
+reuses the already-working environment without upgrading/reinstalling Hermes.
+See [full phone upgrade](../../docs/UPGRADE_0_4.md).
 
-## Current status
+## Tools
 
-The user verified native Termux → Android Back and bridge Stop behavior and indicated completion after status/Home instructions. Installed PRoot alias is ubuntu; Hermes v0.15.2 (2026.5.29.2) runs at /usr/local/bin/hermes with Python 3.14.4.
+Status, Home, Back, Settings, six app aliases; screen snapshot, installed launchable
+apps, basic device state; click, long click, scroll, replace editable text; open
+one discovered package; numbered dialer (not automatic call); speak, stop speech;
+Recents, notification shade and Quick Settings. No raw shell/URL/arbitrary intent.
 
-17 local adapter tests pass, including fake loopback HTTP and stdio handshake/tool discovery. Real Hermes discovery, PRoot network access and real Android tool execution via this adapter are **not tested yet**. The transport implements the legacy initialize handshake used by the listed 2024/2025 MCP protocol versions, not the newer 2026 discovery protocol.
+The adapter itself changes no Hermes settings. Setup verifies the pinned source,
+backs up config, preserves unrelated MCP entries and existing filters, probes real
+Hermes discovery before gateway launch, and optionally appends a backed-up marked
+companion block in SOUL.md with --companion. It does not create check-in jobs.
 
-## Installation and registration
+## Runtime and pairing
 
-Exact v2026.5.29.2 upstream parser and mcp_config source confirm: hermes mcp add android-bridge --command python3 --args /private/path/bridge_mcp.py. It discovers tools, asks Enable all 3 tools [Y/n/select], then saves the entry. No further top-level help is required.
+App token rotates on every bridge Start. Copy its export into native Termux and
+explicitly forward HERMES_BRIDGE_TOKEN into Ubuntu when updating/pairing. Pairing
+checks authenticated status before privately writing
+~/.config/hermes-android-bridge/connection.json (dir700/file600). Every tool call
+rereads it; already-running gateway shell environment does not need token updates.
+Never upload pairing files, .env, backups or copied exports.
 
-setup_android_bridge.py installs the pinned SHA256-verified adapter, validates and pairs the current Android session, privately backs up config.yaml, invokes the installed Hermes CLI for registration, verifies all 3 tools using the installed client's discovery function, and starts the foreground gateway. Run inside Ubuntu with HERMES_BRIDGE_TOKEN explicitly supplied from native Termux. Stop the old foreground gateway first; keep the Android app bridge running. A conflicting/disabled existing entry is not overwritten. No token is placed in Hermes config.
-
-Local tests total37 (17 adapter,13 recovery,7 setup). Actual installed Hermes SDK discovery and Android tool execution still require the user's phone run.
-
-## Pairing design
-
-The app generates a new token each time its bridge starts. Copy the app pairing export into native Termux. Explicitly pass that variable into Ubuntu when running the script's --pair command; never assume an already-running Telegram gateway inherited a newly exported token.
-
-`python3 bridge_mcp.py --pair` reads HERMES_BRIDGE_TOKEN, checks authenticated bridge status, then atomically saves only that token in `$HOME/.config/hermes-android-bridge/connection.json` inside Ubuntu, directory mode 700/file mode 600. This is adapter-owned data, separate from ~/.hermes. The MCP process rereads it per tool call, so token renewal does not require MCP restarts. Never send the token/config file to chat or commit it. Pair again after every Android bridge restart. `--status` checks pairing without starting stdio.
-
-## Protocol and security limits
-
-- Fixed 127.0.0.1:18765 address and allowlisted paths. No URL, shell or arbitrary Android command arguments.
-- Proxy use and HTTP redirects disabled; bounded response reads and five-second timeout.
-- New unique request ID per intentional action, no automatic action retry.
-- Failed/ambiguous requests return tool errors; successful requests report Android acceptance, never visual completion.
-- Tool discovery works before pairing. Actual status/action tools require a valid private pairing file.
-- stdout contains only newline-delimited JSON-RPC while serving. No tokens printed or raw response errors returned.
-- This local session design does not defend against root, compromised OS or stolen private files/clipboard.
-- No chat UI, microphone, settings automation, text input or messaging feature is added here.
-
-## Test
+Use the saved private launcher, not global Hermes's Python shebang:
 
 ```sh
-python3 -m unittest discover -s integrations/hermes_bridge -p 'test_*.py' -v
+proot-distro login ubuntu -- /root/.local/share/hermes-android-bridge/hermes-with-android gateway run
 ```
+
+## Protocol
+
+Fixed IPv4 localhost, proxy/redirect rejection, current Bearer token, unique request
+ID per intentional mutation, no automatic retries. Input schemas reject extra
+fields, unknown aliases, arbitrary URL/package syntax and dialer service codes.
+JSON UTF-8 command bodies <=8192 bytes; text <=2000 chars; response <=256KiB and
+5-second client timeout. Android may accept an action without completing it;
+observe again. Ambiguous requests must not be repeated blindly.
+
+Screen observations need the app's separate per-session opt-in; personal visible
+text may reach the configured model provider. Only one fresh snapshot can target
+an action; screen changes, invalid window/target, age>60s or Stop revoke it.
+Password controls omitted, but mislabeled sensitive text cannot be guaranteed.
+Legacy initialize versions2024/2025 are supported; no2026-protocol claim.
+
+## Evidence
+
+59 tests passed on Python3.12/3.14 in run40642075403. They use fake HTTP/stdio and
+private temporary files; they are not proof of0.4 Android UI outcomes. Earlier
+phone MCP1.26 installation, pairing and3-tool discovery passed in actual user logs;
+status/Home completion was user-reported. See current handoff for distinctions.

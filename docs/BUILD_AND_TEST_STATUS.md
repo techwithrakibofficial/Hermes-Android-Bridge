@@ -1,9 +1,14 @@
-# Build and test status
+# Build and test status —0.4.0
 
-0.4 source:59 local Python tests passed on3.12; Android compile/lint, new socket
-protocol checks and Python3.14 CI are pending. Actual0.4 phone tests pending.
-See docs/COMPANION_0_4.md for the device acceptance procedure.
+- Android run40642075456: compile/lint,46 real-socket protocol checks with fake
+  Android handler, publication PASS. Release dev-12 APK9,354,144 bytes.
+- Python run40642075403:59 tests each on3.12 and3.14 PASS. Local3.12 also59 PASS.
+- Actual0.4 phone UI, TTS, dialer and per-app workflows: pending. Use the safe test
+  activity from docs/UPGRADE_0_4.md. Android acceptance is not visible completion.
+- User reports baseline0.3 works. Earlier logs prove private SDK1.26, pairing and
+  three-tool discovery. Status/Home round trip is user-reported; direct Back and
+  bridge Stop explicitly confirmed. Do not confuse these with0.4 phone evidence.
 
-Baseline0.3 release dev-11: Android run40637536913 compile/lint and30 fake-handler
-socket checks passed; Python run40637536937 passed51 tests on3.12 and3.14.
-User reports baseline works. No new phone UI execution evidence captured.
+https://github.com/techwithrakibofficial/Hermes-Android-Bridge/actions/runs/40642075456
+https://github.com/techwithrakibofficial/Hermes-Android-Bridge/actions/runs/40642075403
+https://github.com/techwithrakibofficial/Hermes-Android-Bridge/releases/tag/dev-12

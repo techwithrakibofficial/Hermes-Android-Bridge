@@ -1,45 +1,61 @@
-# Local bridge test — 0.2.0
+# Local bridge protocol —0.4.0
 
-This milestone connects native Termux to the Android companion. It does NOT connect chat to Hermes yet.
+For current install/pair/device steps use [UPGRADE_0_4.md](UPGRADE_0_4.md).
+The former0.2 native Home/Back test is retained by the same action routes.
 
-## Phone steps
-1. Install the 0.2.0 APK and enable the existing Hermes Bridge Accessibility service if necessary.
-2. In the app, tap **Start local bridge**, read the Home/Back disclosure and confirm. The app should show Listening on 127.0.0.1:18765.
-3. Tap **Copy Termux pairing command**, open your native Termux shell and paste it there. The command sets HERMES_BRIDGE_TOKEN and HERMES_BRIDGE_URL. Keep the real token out of chat, screenshots and GitHub.
-4. In that same Termux session run:
-```sh
-curl --max-time 5 --noproxy '*' -sS -H "Authorization: Bearer $HERMES_BRIDGE_TOKEN" "$HERMES_BRIDGE_URL/v1/status"
-```
-Expected authenticated result:
-```json
-{"bridge":"ready","allowed_actions":["home","back"]}
-```
-5. Test Home:
-```sh
-curl --max-time 5 --noproxy '*' -sS -X POST -H "Authorization: Bearer $HERMES_BRIDGE_TOKEN" -H "X-Request-Id: home-$(date +%s)-$RANDOM-$RANDOM" "$HERMES_BRIDGE_URL/v1/actions/home"
-```
-The phone should display its launcher. The response accepted:true means Android accepted the request; verify the actual screen.
-6. Reopen Termux. Test Back only when it is safe to navigate away from its current screen:
-```sh
-curl --max-time 5 --noproxy '*' -sS -X POST -H "Authorization: Bearer $HERMES_BRIDGE_TOKEN" -H "X-Request-Id: back-$(date +%s)-$RANDOM-$RANDOM" "$HERMES_BRIDGE_URL/v1/actions/back"
-```
-7. Reopen Bridge and press **Stop local bridge**. The status request should no longer connect. Restarting creates a new token, so copy the new pairing command. Disabling Accessibility or process termination also ends the session.
-8. Confirm the old Telegram bot still responds without changing configuration.
+## Transport
 
-If curl is missing, install only curl using Termux's package manager; do not reinstall Hermes or Termux:API. A connection-refused result means the listener is stopped, could not bind, or the Android process ended. Reopen Bridge and check its state. An unauthorized response means the token is missing/wrong/old; copy the current pairing command again.
-Default debug keys can differ between builds. If Android rejects the update certificate, reinstall only the Bridge app and manually enable its service again, preserving Termux/Telegram/Hermes.
+User-started IPv4 loopback127.0.0.1:18765 only. Each session has a fresh random
+256-bit Bearer token. Exact Host127.0.0.1:18765 required; Origin and duplicate
+headers rejected. No public/LAN listener, CORS, redirects, proxy or tunnel.
+Each response is JSON/no-store/connection-close. Bounded ASCII headers/read
+request deadline2s; main-thread dispatch wait1.2s; client timeout5s. Token is
+private memory on Android and private mode600 pairing file in Ubuntu.
 
-## Protocol and limits
-- IPv4 loopback only: 127.0.0.1:18765, no public/LAN listener, tunnel or port forwarding.
-- HTTP/1.1, exact Host header and bearer token for every endpoint. No CORS/browser origin.
-- GET /v1/status is bridge readiness, not Hermes health.
-- POST /v1/actions/home and /v1/actions/back only. No body. X-Request-Id must be 8–80 ASCII letters, digits, underscore or hyphen; use a fresh value for each intentional command.
-- Duplicate IDs return 409 and never dispatch again within the session. Failed/timed-out actions reserve the ID too. Never automatically retry an action after an ambiguous timeout.
-- Up to 256 action IDs per session; then 429 requires a new explicitly started session and token. No replay-cache eviction within a session.
-- Bounded headers, line length and read deadline; one request per connection; close after response.
-- Dispatch happens on Android's main thread with a bounded wait. Background lifetime depends on Android's Accessibility service/process; no uptime guarantee.
-- The token is in memory only, excluded from logs and hidden from UI. It is explicitly copied to the user's local shell. Anyone with the current token on the device can invoke the allowed actions.
-- Plain HTTP is confined to local loopback. This is not protection against root, debugger access, compromised apps/OS or stolen clipboard/shell contents.
+Authenticated GET routes: /v1/status, /v1/screen, /v1/apps, /v1/device.
+Screen requires separate per-session screen-control opt-in. Other observations
+require an unlocked phone. Status is bridge readiness, not Hermes health.
 
-## Verification status
-20 protocol checks passed in CI on a JVM with a fake Android handler (run 40608250521). APK compile/lint and publication also passed. They cannot verify actual Home/Back effects, Android background behavior, or PRoot/Hermes integration. Report status response, Home/Back screen behavior and Stop behavior without the token.
+POST bodyless actions: /v1/actions/home, back, settings, recents, notifications,
+quick_settings, stop_speech; /v1/actions/open-app/<one of six known aliases>.
+
+POST JSON commands: /v1/commands/click, long-click, scroll, set-text,
+open-package, dial, speak. Exact Content-Type application/json and decimal
+Content-Length1..8192, valid UTF-8 required. No transfer encoding. Strict
+per-command keys/types checked on Android and in MCP input schemas.
+
+Mutations require X-Request-Id8..80 ASCII letters/digits/underscore/hyphen.
+Duplicate409; all attempted IDs remain reserved even on failure/timeout, with
+256 IDs/session maximum then429. No eviction or automatic retry. Malformed or
+unknown actions never dispatch. New session invalidates the old token.
+
+## UI actions
+
+Screen snapshot returns up to120 visible nodes, depth24/child80 limits,
+120-character text/description fields, class/view ID, bounds, interaction flags,
+parent IDs and a random snapshot ID. Password-control text/descriptions/children
+omitted. App mislabeling may still reveal sensitive data. Tree is not stored to
+disk; screen text sent through Hermes may reach its configured model provider.
+
+One precise action consumes the snapshot. Current window/package, event revision,
+60s age, refreshed-node signature, visible/enabled/non-password state and supported
+action are checked. Long-click/click/scroll use Accessibility node actions;
+set-text replaces/clears an editable field. No coordinate gesture fallback.
+Reobserve to verify the actual result; accepted is not task completion.
+
+App discovery is limited to launchable activities visible through a launcher
+intent query, not QUERY_ALL_PACKAGES. Open-package must be currently launchable.
+Dial opens ACTION_DIAL with digits/optional plus only, not call placement or AI
+call audio. Speech queues selected TTS voice/speed, not proof sound was heard.
+
+## Stop and evidence
+
+Stop closes listener/active socket, rotates/revokes session, clears snapshots and
+screen permission, stops remote TTS. Disable Accessibility/process death also
+ends the session. A started Android action cannot be undone by closing a socket.
+No background-uptime guarantee or protection against compromised OS/root/token
+file theft. No root/ADB/EMI bypass is implemented.
+
+Run40642075456 passed compile/lint and46 real-socket checks with a fake Android
+handler. These do not test real Accessibility node correctness or app outcomes.
+See BUILD_AND_TEST_STATUS.md and AI_HANDOFF.md for actual phone evidence.

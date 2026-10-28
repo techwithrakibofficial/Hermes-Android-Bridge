@@ -1,34 +1,43 @@
 # Hermes Android Bridge
 
-Android companion for an existing Hermes Agent in Termux Ubuntu PRoot. Preserve the existing agent and Telegram gateway.
+Kotlin/Jetpack Compose companion for the existing Hermes Agent in Android Termux
+Ubuntu PRoot. Conversation stays in the existing paired Telegram bot; Android
+operation uses a user-started authenticated127.0.0.1 bridge and19 MCP tools.
 
-## Current milestone: device capability test
+## Current development release0.4.0
 
-- Kotlin / Jetpack Compose app, Android 8+ (API 26), targeting API 35.
-- Live Accessibility connection status, disclosure and manual Settings handoff.
-- Explicit Home and Back buttons using Android global actions.
-- Android TTS test with ready/speaking/completed/error states and stop control.
-- No Internet, microphone, storage, screen-content or gesture capability requested in this milestone.
-- Hermes chat, voice input and secure loopback bridge are **not implemented yet**.
+[Download APK](https://github.com/techwithrakibofficial/Hermes-Android-Bridge/releases/download/dev-12/Hermes-Bridge-0.4.0.apk) · [Phone upgrade guide](docs/UPGRADE_0_4.md) · [Current handoff](docs/AI_HANDOFF.md)
 
-## Phone-only workflow
+- Explicit screen-control opt-in, bounded UI tree and password-control omission.
+- Fresh-target click, long press, scroll and editable text replacement; reobserve
+  to verify. Snapshot expiry and state checks reject stale targets.
+- Discover/open launchable apps, Settings, Home/Back/Recents, notification shade,
+  Quick Settings, numbered dialer, basic device/battery state.
+- Speak using saved engine/voice/language/speed; Stop speech and bridge session.
+- Safe test activity for real-phone verification.
+- Optional preserved companion preferences: natural warm Bengali, feminine persona,
+  welcome affectionate tone, conversation, planning/coding and task verification.
 
-Push code to main → GitHub Actions compiles and lints → successful build uploads APK artifact → publish job creates a development prerelease with a direct APK asset. No Android Studio or Developer Options required.
+CI compile/lint,46 fake-handler socket checks and59 Python tests on3.12/3.14
+passed. **Actual0.4 phone actions and per-app workflows remain unverified.**
+No live AI call audio, incoming AI telephone calls, standalone mic/chat UI,
+hardware-repair guarantee, root/ADB/EMI bypass or unrestricted provider promise.
+Installed TTS voices must be previewed to choose a clear feminine voice.
+See [scope and tests](docs/COMPANION_0_4.md).
 
-Open **Releases**, choose the newest development release, and download `Hermes-Bridge-0.1.0.apk`. Do not treat the presence of this README as evidence that a build passed. See `docs/BUILD_AND_TEST_STATUS.md`.
+## Phone-only development
 
-Development APK uses default Android debug signing. Different CI runners may use different keys, so in-place updates are not guaranteed. Stable signing/versioning is required before wider distribution. Never overwrite a release key with a debug key.
+Push code → GitHub Actions → compile/lint/tests → APK prerelease. No Android Studio
+or Developer Options needed. Preserve existing Hermes/provider/Telegram/memory.
+Debug signing uses a cached development key; cache eviction may require a
+Bridge-only reinstall. Stable release signing remains future work.
 
-## Build locally or in CI
-
-Use JDK 17, Android SDK platform 35/build-tools 35.0.0, and Gradle **8.11.1**:
+JDK17, Android SDK35/build-tools35.0.0, Gradle8.11.1:
 
 ```sh
 gradle --no-daemon :app:assembleDebug :app:lintDebug
+python3 -m unittest discover -s integrations/hermes_bridge -p 'test_*.py' -v
 ```
 
-CI deliberately provisions the pinned Gradle distribution using `gradle/actions/setup-gradle`. It does not require an absent `gradlew` or an uploaded keystore. Gradle wrapper files can be generated and committed later from a verified distribution.
-
-## Device test
-
-See `docs/DEVICE_TEST.md`. If the EMI policy blocks Accessibility, record that result and stop that test. No root, ADB, restriction bypass, Telegram reconfiguration, or agent reinstallation.
+The bridge/installed offline TTS add no subscription. Existing inference-provider
+limits/costs and online-voice terms remain. Android may stop background processes.

@@ -58,6 +58,19 @@ that every human action can be automated successfully.
 
 ## Current implementation boundary
 
-The staged 0.3 build opens Settings and allowlisted apps. It does not yet read
-screens, click inside apps, type, change settings, send messages or make calls.
-Do not present those future capabilities as working before individual tests.
+0.4 source/build adds bounded opt-in UI observation, fresh-node click/long-click/
+scroll/text, app discovery/open package, dialer, speech and basic device state.
+CI passes; actual0.4 phone results remain pending. General UI primitives are not
+proof of reliable per-app send/call/repair workflows. See COMPANION_0_4.md.
+
+## Expanded personal companion request
+
+User wants the widest practical personal assistant, calls/messages, planning and
+coding, friendly proactive contact, emotional support, feminine default persona
+and voice, playful/romantic tone and open discussion. All preferences should be
+implemented where practical without replacing their existing setup. The user
+accepting risk is not evidence of a tested feature, Android capability or removal
+of model-provider limits. No continuous mic or live call audio is implemented.
+Feminine persona is in the optional preserved SOUL block; actual TTS voice must
+be previewed and selected on the phone. Existing Hermes cron can provide private
+Telegram check-ins after timezone/delivery verification; none is installed by0.4.
