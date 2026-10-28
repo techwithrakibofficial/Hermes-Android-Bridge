@@ -26,19 +26,19 @@ Local coding/testing:
 - Recovery helper integrations/hermes_bridge/recover_gateway.py added.13 recovery tests plus17 adapter tests =30 tests passed locally on Python3.12 using temp files/fake Telegram HTTP. No real account or phone recovery test yet.
 
 ## 4. Exact stopping point
-User frustrated by repeated fragmented diagnostics. Prepared a single-command verified-download recovery helper. It reads actual saved pairing, checks bot token/HTTPS getMe before edits, privately backs up .env/config.yaml, edits only HASS_TOKEN and TELEGRAM_ALLOWED_USERS assignments, retains existing authorized users and credentials, validates effective config, and optionally starts foreground gateway.
-No owner guessing/allow-all. If pairing, token or network checks fail, it stops with sanitized diagnostics. Does not guarantee long-poll/inference success; actual Telegram AI reply is final acceptance.
-Helper is staged in GitHub; user has NOT run it. Latest log alone does not establish current bot reply behavior.
+User confirms receiving a Telegram AI reply after gateway recovery. Record Telegram recovery SUCCESS by user report; do not repeat the Home Assistant/allowlist troubleshooting. Resume Android MCP installation.
+Prepared setup_android_bridge.py: pinned/download-verified adapter, private install/pairing, config backup, installed CLI registration, exact-client tool discovery and automatic foreground gateway start. Local tests total37 passed on Python3.12; actual setup/registration/actions have NOT run on the phone yet.
+Exact upstream v2026.5.29.2 parser/source now verifies mcp add android-bridge --command <python> --args <script>; no more help output is required. CLI asks Enable all 3 tools [Y/n/select]. Setup calls its discovery verifier after saving.
 
 ## 5. Outstanding/blockers
-1. Run recovery helper after stopping current gateway. Report Telegram reply or sanitized STOP line.
-2. Confirm real Telegram message→AI reply, then resume mcp add --help and pinned adapter install/pair/test. No further top-level help loops.
+1. Stop current foreground gateway, start Android app local bridge, copy pairing export into native Termux, then run the pinned setup command with explicit token forwarding to Ubuntu.
+2. User has confirmed Telegram AI reply. Next verify actual MCP discovery, then an Android status tool call from Telegram.
 3. PRoot→Android action tests via actual Hermes tool; then Settings/open app/screen/click/type capabilities and chat/voice input.
 4. Stable APK signing/versioning; current debug runner keys may differ.
 5. Android may kill Termux processes; no background-uptime guarantee.
 
 ## 6. Single next action
-Ctrl+C current foreground gateway, then run the pinned SHA256-verified recovery command provided in chat (--run). It automatically starts gateway only after successful preflight/repair validation. Keep Termux open and send one Telegram message.
+Use the setup command supplied in chat after explicitly stopping old gateway and copying the app's fresh pairing command into native Termux. The setup forwards the token to Ubuntu, pairs the adapter, asks Y for three tools, verifies discovery and restarts gateway. Then in Telegram start /new and ask the agent to use android_bridge_status. Report PASS/STOP and actual tool result, not the secret token.
 
 ## 7. Files/verification limits
 - integrations/hermes_bridge/RECOVERY.md: scope, checks, safe diagnostics and backups.
@@ -48,3 +48,6 @@ Ctrl+C current foreground gateway, then run the pinned SHA256-verified recovery 
 - Local tests: python -m unittest discover -s integrations/hermes_bridge -p 'test_*.py' -v.
 - Recovery backups live only on phone in ~/.hermes/android-bridge-recovery/<timestamp> (private); never upload them or .env.
 - Do not call a build/device/integration working without appropriate evidence.
+
+## Setup source and verification
+integrations/hermes_bridge/setup_android_bridge.py SHA256 6331a216e81885fa9a0ca4d696c3df44b7ab47799946bdef42b39170c8d553c6.37 local tests passed; temporary-file/HTTP/stdin tests do not establish actual installed Hermes MCP compatibility. The user must run setup before any claim of agent-controlled Android success. This phase does not add Settings/click/type/chat-app actions, voice input or companion chat UI.

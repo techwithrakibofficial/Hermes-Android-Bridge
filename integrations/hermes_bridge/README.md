@@ -8,15 +8,13 @@ The user verified native Termux → Android Back and bridge Stop behavior and in
 
 17 local adapter tests pass, including fake loopback HTTP and stdio handshake/tool discovery. Real Hermes discovery, PRoot network access and real Android tool execution via this adapter are **not tested yet**. The transport implements the legacy initialize handshake used by the listed 2024/2025 MCP protocol versions, not the newer 2026 discovery protocol.
 
-## Installation and registration gate
+## Installation and registration
 
-Next inspect the actual installed command before providing a registration invocation:
+Exact v2026.5.29.2 upstream parser and mcp_config source confirm: hermes mcp add android-bridge --command python3 --args /private/path/bridge_mcp.py. It discovers tools, asks Enable all 3 tools [Y/n/select], then saves the entry. No further top-level help is required.
 
-```sh
-proot-distro login ubuntu -- bash -lc 'hermes mcp add --help'
-```
+setup_android_bridge.py installs the pinned SHA256-verified adapter, validates and pairs the current Android session, privately backs up config.yaml, invokes the installed Hermes CLI for registration, verifies all 3 tools using the installed client's discovery function, and starts the foreground gateway. Run inside Ubuntu with HERMES_BRIDGE_TOKEN explicitly supplied from native Termux. Stop the old foreground gateway first; keep the Android app bridge running. A conflicting/disabled existing entry is not overwritten. No token is placed in Hermes config.
 
-Do not blindly rewrite ~/.hermes/config.yaml or choose hermes mcp serve: serve exposes Hermes conversations to another agent, while this integration adds Android tools to Hermes. The adapter runs with `python3 bridge_mcp.py` over stdio. Install the script at a private, separately managed path after confirming the installed CLI options. No pip dependency or Hermes upgrade is required by the script.
+Local tests total37 (17 adapter,13 recovery,7 setup). Actual installed Hermes SDK discovery and Android tool execution still require the user's phone run.
 
 ## Pairing design
 
