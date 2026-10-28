@@ -135,15 +135,22 @@ and a deadline check prevents starting a mutation after validation used its time
 The test button is pinned outside the scrolling settings content so prior scroll
 position cannot hide it. Existing19-tool adapter is unchanged/compatible.
 The local execution environment disconnected during coding; sources were staged
-through GitHub. New JVM guard fixtures and compile/lint await GitHub Actions.
-No new0.4.2 local tests or phone execution claimed.
+through GitHub. Code0291f89fc4e9b92435a111a7dcb5f685383699c0 passed Android
+run40652609851 compile/lint,46 real-socket protocol checks,22 catalog fixtures and
+22 new snapshot-guard fixtures. Published dev-16 APK0.4.2 (9,370,528 bytes),
+SHA256a50660a98349bc350bc7fb640e1bd0157516f6666bde4b6876683f1105227e14.
+No new local tests or actual0.4.2 phone execution claimed. Python adapter source
+is unchanged; prior61 checks on3.12/3.14 remain baseline, not rerun in this build.
 
 ## Single next action
-Run CI for0.4.2, fix actual failures and publish only a passing build. Then install
-new APK, renew existing pairing (no SDK/model/provider/Telegram changes), restart
-the saved private launcher and test pinned test-button click + Bengali draft +
-counter with fresh observations. Record actual visible results. Keep saved
-model.max_tokens output cap; do not increase context_length or request free credits.
+Follow docs/FIX_0_4_2.md: Ctrl+C foreground gateway, install dev-16 APK0.4.2,
+Start bridge/enable screen control, copy fresh pairing export alone into native
+Termux, pair with existing private Python/bridge_mcp.py --pair, then launch saved
+hermes-with-android gateway run. No adapter/SDK/provider/model/Telegram reset.
+Keep the saved output cap. Send one combined open+screen+click/type/counter task;
+do not switch foreground apps while it runs. Verify actual Draft/Counter on phone.
+Report specific new error if any, not another blind scroll loop. Read-only screen
+and opening already work; click/type/scroll and audible speech still need proof.
 
 ## Still unimplemented or unverified
 - No live carrier/WhatsApp call audio, Telecom dialer role, incoming-call answer/

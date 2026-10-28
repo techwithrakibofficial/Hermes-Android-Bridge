@@ -4,9 +4,9 @@ Kotlin/Jetpack Compose companion for the existing Hermes Agent in Android Termux
 Ubuntu PRoot. Conversation stays in the existing paired Telegram bot; Android
 operation uses a user-started authenticated127.0.0.1 bridge and19 MCP tools.
 
-## Current development release0.4.1
+## Current development release0.4.2
 
-[Download APK](https://github.com/techwithrakibofficial/Hermes-Android-Bridge/releases/download/dev-15/Hermes-Bridge-0.4.1.apk) · [Phone repair/upgrade guide](docs/FIX_0_4_1.md) · [Current handoff](docs/AI_HANDOFF.md)
+[Download APK](https://github.com/techwithrakibofficial/Hermes-Android-Bridge/releases/download/dev-16/Hermes-Bridge-0.4.2.apk) · [Phone repair/upgrade guide](docs/FIX_0_4_2.md) · [Current handoff](docs/AI_HANDOFF.md)
 
 - Explicit screen-control opt-in, bounded UI tree and password-control omission.
 - Fresh-target click, long press, scroll and editable text replacement; reobserve
@@ -18,10 +18,13 @@ operation uses a user-started authenticated127.0.0.1 bridge and19 MCP tools.
 - Optional preserved companion preferences: natural warm Bengali, feminine persona,
   welcome affectionate tone, conversation, planning/coding and task verification.
 
-0.4.1 moves app discovery off the UI thread, caches labels, removes whole-catalog
-queries from exact-package launch and explicitly starts the remote TTS engine.
-CI compile/lint,46 fake-handler socket checks,22 fake-provider catalog tests and61
-Python tests on3.12/3.14 passed. **Actual0.4.1 phone outcomes remain unverified.**
+0.4.2 revalidates actual bounded screen context and exact node identity instead
+of rejecting every accessibility event. The safe test button stays pinned above
+the scrolling settings. Compile/lint and90 JVM checks passed (46 protocol,
+22 catalog,22 snapshot guard). The unchanged adapter's prior61 Python tests passed
+on3.12/3.14. **Actual0.4.2 phone click/type/scroll outcomes remain unverified.**
+Phone0.4.1 catalog, status/device reads, package opening and screen reads were
+confirmed in user output; the old broad freshness check blocked scrolling.
 No live AI call audio, incoming AI telephone calls, standalone mic/chat UI,
 hardware-repair guarantee, root/ADB/EMI bypass or unrestricted provider promise.
 Installed TTS voices must be previewed to choose a clear feminine voice.

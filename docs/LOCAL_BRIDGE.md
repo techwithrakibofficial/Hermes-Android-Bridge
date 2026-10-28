@@ -65,3 +65,13 @@ if still pending, maximum150 labels resolved once. Exact-package opening resolve
 only that package. Remote voice engine is explicitly initialized. Device state
 includes voice_status/language, app_catalog_state and last_dispatch_error. These
 are diagnostic fields, not proof of a completed action or audible speech.
+
+##0.4.2 snapshot correction
+Every node mutation now rereads the bounded visible context, compares a private
+content fingerprint plus active window/package and exact Android node identity.
+Event-count changes alone no longer reject.60s age, single-use, locked/password/
+visible/enabled and supported-action rules remain. Distinct error codes identify
+ID mismatch, expiry, window/context/target change or validation timeout. UI-node
+dispatch is3.5s including validation, with a final pre-action deadline fence.
+The bounded subset is not proof all offscreen context or every race is covered.
+No automatic action retries. Read docs/FIX_0_4_2.md for current upgrade/tests.
