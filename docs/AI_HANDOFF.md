@@ -242,16 +242,18 @@ deliveries have not yet been reported; the prior one-shot test was received.
 The stop/pause behavior was instructed/reported, not exercised on these jobs.
 This is user-supplied cron evidence, not a direct inspection from this assistant.
 
+##0.5 native companion work authorized
+User explicitly requests professional master plan and a complete integration APK,
+with native chat/mic, robust voice lifecycle and comprehensive checks; phone QA
+will follow installation. See MASTER_PLAN.md. Preserve all proven0.4.2 actions,
+provider/free route, Telegram/cron and voices. Current exact baseline head
+f63769aa29c84302e588f1a1b0ce09fb15492520. Native chat/voice is not built/tested yet.
+
 ## Single next action
-Leave existing jobs in place; no repeat creation or setup needed. Gateway/Termux
-must remain running and inference service/quota available for model-backed jobs.
-Confirm receipt of the first regular scheduled message, then record its job ID
-and user-reported delivery time without claiming perfect uptime or unlimited use.
-If missing, inspect that specific job's last execution/delivery status before
-recreating jobs. For stop requests pause only these two companion jobs.
-Core bridge + one real Facebook workflow + one-shot proactive delivery are
-user-verified; first daily delivery, per-app sending/calling and native companion
-mic/chat remain outstanding. Future product work must preserve this working setup.
+Implement native companion UI/voice turn state machine and authenticated Python
+ACP backend against exact installed Hermes v2026.5.29.2. Pin optional ACP SDK0.9.0
+in existing private Python. Add tests, run Android/adapter/ACP CI, publish only on
+passing compile/lint. No actual new phone behavior claimed until user acceptance.
 
 ## Still unimplemented or unverified
 - No live carrier/WhatsApp call audio, Telecom dialer role, incoming-call answer/
