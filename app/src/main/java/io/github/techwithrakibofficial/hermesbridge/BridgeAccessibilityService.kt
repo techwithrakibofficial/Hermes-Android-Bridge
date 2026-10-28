@@ -148,7 +148,7 @@ class BridgeAccessibilityService : AccessibilityService() {
                     "notifications" -> performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS)
                     "quick_settings" -> performGlobalAction(GLOBAL_ACTION_QUICK_SETTINGS)
                     "settings" -> launchSettings()
-                    "stop_speech" -> { remoteVoice?.stop(); true }
+                    "stop_speech" -> { SpeechOutputGate.stopAll(); true }
                     else -> if (action.startsWith("open_app:")) launchAllowedApp(action.removePrefix("open_app:")) else false
                 }
                 ScreenController.accepted(ok)

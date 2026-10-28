@@ -2,7 +2,7 @@ name: Build companion APK
 on:
   push:
     branches: [main]
-    paths-ignore: ['docs/**', '*.md']
+    paths: ['app/**', 'tests/**', '.github/workflows/build-apk.yml', 'build.gradle.kts', 'settings.gradle.kts', 'gradle.properties']
   pull_request:
   workflow_dispatch:
 permissions:
@@ -23,10 +23,11 @@ jobs:
       - name: Test local bridge protocol over real sockets
         run: |
           mkdir -p /tmp/hermes-protocol-test
-          javac -d /tmp/hermes-protocol-test app/src/main/java/io/github/techwithrakibofficial/hermesbridge/LocalBridgeServer.java app/src/main/java/io/github/techwithrakibofficial/hermesbridge/AppCatalog.java app/src/main/java/io/github/techwithrakibofficial/hermesbridge/SnapshotLease.java tests/LocalBridgeServerTest.java tests/AppCatalogTest.java tests/SnapshotLeaseTest.java
+          javac -d /tmp/hermes-protocol-test app/src/main/java/io/github/techwithrakibofficial/hermesbridge/LocalBridgeServer.java app/src/main/java/io/github/techwithrakibofficial/hermesbridge/AppCatalog.java app/src/main/java/io/github/techwithrakibofficial/hermesbridge/SnapshotLease.java tests/LocalBridgeServerTest.java tests/AppCatalogTest.java tests/SnapshotLeaseTest.java app/src/main/java/io/github/techwithrakibofficial/hermesbridge/VoiceTurnGate.java app/src/main/java/io/github/techwithrakibofficial/hermesbridge/SpeechChunks.java tests/VoiceTurnGateTest.java
           java -cp /tmp/hermes-protocol-test LocalBridgeServerTest
           java -cp /tmp/hermes-protocol-test AppCatalogTest
           java -cp /tmp/hermes-protocol-test SnapshotLeaseTest
+          java -cp /tmp/hermes-protocol-test VoiceTurnGateTest
       - uses: android-actions/setup-android@v3
         with:
           packages: 'platform-tools'
@@ -46,9 +47,9 @@ jobs:
       - name: Prepare phone download
         run: |
           mkdir -p dist
-          cp app/build/outputs/apk/debug/app-debug.apk dist/Hermes-Bridge-0.4.2.apk
+          cp app/build/outputs/apk/debug/app-debug.apk dist/Hermes-Bridge-0.5.0.apk
           cd dist
-          sha256sum Hermes-Bridge-0.4.2.apk > SHA256SUMS.txt
+          sha256sum Hermes-Bridge-0.5.0.apk > SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
           name: Hermes-Bridge-APK
@@ -78,4 +79,4 @@ jobs:
           BUILD_SHA: ${{ github.sha }}
           RUN_NUMBER: ${{ github.run_number }}
         run: |
-          gh release create "dev-${RUN_NUMBER}" dist/* --target "$BUILD_SHA" --prerelease --title "Hermes Bridge 0.4.2 • device test ${RUN_NUMBER}" --notes 'Development APK 0.4.2 replaces blanket accessibility-event invalidation with fresh bounded visible-context and exact node identity validation. Retains snapshot ID/age, window/package, password, supported-action and one-use checks. Adds specific stale reasons and validation deadline. Moves safe control-test button to the top. Existing 19-tool adapter is compatible: renew pairing after update. CI fixtures do not prove TECNO click/type/scroll success.'
+          gh release create "dev-${RUN_NUMBER}" dist/* --target "$BUILD_SHA" --prerelease --title "Hermes Bridge 0.5.0 • device test ${RUN_NUMBER}" --notes 'Native companion integration build 0.5.0: chat and microphone UI, foreground task/voice service with Stop, turn-taking recognition and saved TTS voice, private ACP backend with idempotent requests/approvals/cancel and session restore. Existing Telegram/cron/19 Android tools preserved. Install the matching private companion backend; current bridge pairing is required. CI fixtures do not establish real TECNO mic/voice/app workflows. See docs/UPGRADE_0_5.md and MASTER_PLAN.md.'

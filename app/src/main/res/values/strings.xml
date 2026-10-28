@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Hermes Bridge</string>
+    <string name="app_name">Hermes Companion</string>
     <string name="service_name">Hermes Bridge • Android actions</string>
     <string name="service_summary">User-controlled screen reading, navigation, text entry and local Android actions</string>
     <string name="service_description">While the local bridge and separate screen-control switch are on, Hermes can read visible app text and perform click, scroll and text-entry actions for your tasks. Visible personal text may be sent to your configured AI provider. Password controls are omitted, but other sensitive text may be visible. The bridge also supports app launches, dialer and speech. A fresh secret token is required per session. Stop in the app or disable Accessibility at any time. No root or protected restriction bypass.</string>

@@ -8,6 +8,25 @@ import android.speech.tts.UtteranceProgressListener
 import android.speech.tts.Voice
 import androidx.compose.runtime.*
 import java.util.Locale
+import java.util.UUID
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+
+/** All app TTS instances share one output owner to prevent speaker/microphone feedback. */
+object SpeechOutputGate {
+    private var owner: VoiceOutput? = null
+    private val active = MutableStateFlow(false)
+    val speaking = active.asStateFlow()
+    fun claim(output: VoiceOutput) {
+        if (owner !== output) owner?.stop()
+        owner = output
+        active.value = true
+    }
+    fun stopAll() { owner?.stop() }
+    fun release(output: VoiceOutput) {
+        if (owner === output) { owner = null; active.value = false }
+    }
+}
 
 /** App-scoped preferences; never changes system/Termux speech settings. */
 class VoiceOutput(context: Context) {
@@ -17,6 +36,8 @@ class VoiceOutput(context: Context) {
     private var tts: TextToSpeech? = null
     private var generation = 0
     private var disposed = false
+    private var utterance: String? = null
+    private var completion: ((Boolean) -> Unit)? = null
     private var initialized = false
     var engines by mutableStateOf<List<TextToSpeech.EngineInfo>>(emptyList())
         private set
@@ -47,7 +68,7 @@ class VoiceOutput(context: Context) {
         ready = false
         voices = emptyList()
         selectedVoice = null
-        tts?.stop()
+        stop()
         tts?.shutdown()
         status = "Loading speech engine…"
         tts = TextToSpeech(appContext, { result ->
@@ -77,14 +98,22 @@ class VoiceOutput(context: Context) {
                 }
                 initialized = true
                 engine.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-                    private fun post(value: String) { handler.post {
-                        if (!disposed && ticket == generation) status = value
+                    private fun finish(id: String?, ok: Boolean, message: String) { handler.post {
+                        if (disposed || ticket != generation || id != utterance) return@post
+                        status = message
+                        utterance = null
+                        SpeechOutputGate.release(this@VoiceOutput)
+                        val callback = completion; completion = null
+                        callback?.invoke(ok)
                     } }
-                    override fun onStart(utteranceId: String?) = post("Speaking…")
-                    override fun onDone(utteranceId: String?) = post("Speech completed. Confirm the voice sounds clear.")
+                    override fun onStart(utteranceId: String?) { handler.post {
+                        if (!disposed && ticket == generation && utteranceId == utterance) status = "Speaking…"
+                    } }
+                    override fun onDone(utteranceId: String?) = finish(utteranceId, true, "Speech completed. Confirm the voice sounds clear.")
+                    override fun onStop(utteranceId: String?, interrupted: Boolean) = finish(utteranceId, false, "Speech stopped")
                     @Deprecated("Required by Android")
-                    override fun onError(utteranceId: String?) = post("Speech failed. Check voice data or network permission in the engine.")
-                    override fun onError(utteranceId: String?, errorCode: Int) = post("Speech failed (code $errorCode). Try another voice or install its data.")
+                    override fun onError(utteranceId: String?) = finish(utteranceId, false, "Speech failed. Check voice data.")
+                    override fun onError(utteranceId: String?, errorCode: Int) = finish(utteranceId, false, "Speech failed (code $errorCode). Check voice data.")
                 })
                 loadVoices()
             }
@@ -167,7 +196,7 @@ class VoiceOutput(context: Context) {
         speak(text)
     }
 
-    fun speak(text: String): Boolean {
+    fun speak(text: String, onFinished: ((Boolean) -> Unit)? = null): Boolean {
         val engine = tts ?: return false
         val voice = selectedVoice ?: return false
         if (!ready || text.length > 2000) return false
@@ -178,17 +207,34 @@ class VoiceOutput(context: Context) {
             status = "Voice, speed বা pitch apply হয়নি। অন্য voice চেষ্টা করুন।"
             return false
         }
+        stop()
+        val id = UUID.randomUUID().toString()
+        utterance = id
+        completion = onFinished
+        SpeechOutputGate.claim(this)
         status = "Speech queued…"
-        val accepted = engine.speak(text, TextToSpeech.QUEUE_FLUSH, null, "voice-output") == TextToSpeech.SUCCESS
-        if (!accepted) status = "Speech could not start. Check the selected voice data."
+        val accepted = engine.speak(text, TextToSpeech.QUEUE_FLUSH, null, id) == TextToSpeech.SUCCESS
+        if (!accepted) {
+            utterance = null; completion = null
+            SpeechOutputGate.release(this)
+            status = "Speech could not start. Check the selected voice data."
+        }
         return accepted
     }
 
-    fun stop() { tts?.stop(); if (ready) status = "Speech stopped" }
+    fun stop() {
+        val callback = completion
+        completion = null
+        utterance = null
+        tts?.stop()
+        SpeechOutputGate.release(this)
+        if (ready) status = "Speech stopped"
+        callback?.invoke(false)
+    }
     fun close() {
         disposed = true
         generation++
-        tts?.stop()
+        stop()
         tts?.shutdown()
         tts = null
     }
