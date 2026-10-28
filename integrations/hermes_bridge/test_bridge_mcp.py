@@ -21,16 +21,26 @@ TOKEN = "A" * 43
 class FakeAndroid(BaseHTTPRequestHandler):
     calls = []
     code = 200
+    bodies = []
+    rejection = None
 
     def log_message(self, *args):
         pass
 
     def do_GET(self):
+        if self.path == "/v1/screen":
+            self.answer({"snapshot": "fresh", "nodes": [{"id": "n0", "text": "বাংলা"}]}); return
+        if self.path == "/v1/apps":
+            self.answer({"apps": [{"package": "com.example.app", "label": "Example"}]}); return
+        if self.path == "/v1/device":
+            self.answer({"screen_control_enabled": True}); return
         self.answer({"bridge": "ready", "allowed_actions": ["home", "back", "settings", "open_app"], "supported_apps": list(bridge.SUPPORTED_APPS)})
 
     def do_POST(self):
         self.calls.append((self.path, self.headers.get("X-Request-Id"), self.headers.get("Authorization")))
-        self.answer({"accepted": True})
+        length = int(self.headers.get("Content-Length", "0"))
+        self.bodies.append((self.path, self.headers.get("Content-Type"), self.rfile.read(length).decode("utf-8")))
+        self.answer(self.rejection or {"accepted": True})
 
     def answer(self, data):
         if self.headers.get("Authorization") != "Bearer " + TOKEN:
@@ -65,6 +75,8 @@ class AdapterTests(unittest.TestCase):
         self.url_patch.start()
         self.addCleanup(self.url_patch.stop)
         FakeAndroid.calls = []
+        FakeAndroid.bodies = []
+        FakeAndroid.rejection = None
         FakeAndroid.code = 200
 
     def test_pair_verifies_and_uses_private_modes(self):
@@ -171,7 +183,7 @@ class AdapterTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0)
         responses = [json.loads(line) for line in result.stdout.splitlines()]
         self.assertEqual([r["id"] for r in responses], [1, 2, 3])
-        self.assertEqual(len(responses[1]["result"]["tools"]), 5)
+        self.assertEqual(len(responses[1]["result"]["tools"]), 19)
 
     def test_settings_uses_only_allowed_path(self):
         self.client.pair(TOKEN)
@@ -196,6 +208,44 @@ class AdapterTests(unittest.TestCase):
         self.assertEqual(schema["required"], ["app"])
         self.assertFalse(schema["additionalProperties"])
         self.assertEqual(set(schema["properties"]["app"]["enum"]), {"whatsapp","facebook","messenger","telegram","chrome","termux"})
+
+    def test_visible_screen_is_returned_without_fabricated_completion(self):
+        self.client.pair(TOKEN)
+        result = self.client.request("android_screen")
+        self.assertEqual(result["nodes"][0]["text"], "বাংলা")
+        self.assertEqual(FakeAndroid.calls, [])
+
+    def test_bengali_text_body_preserves_target_and_unicode(self):
+        self.client.pair(TOKEN)
+        args = {"snapshot": "fresh-123", "node": "n3", "text": "কেমন আছ?"}
+        self.client.request("android_set_text", arguments=args)
+        path, kind, raw = FakeAndroid.bodies[0]
+        self.assertEqual(path, "/v1/commands/set-text")
+        self.assertEqual(kind, "application/json")
+        self.assertEqual(json.loads(raw), args)
+
+    def test_stale_rejection_is_reported_once(self):
+        self.client.pair(TOKEN)
+        FakeAndroid.rejection = {"accepted": False, "error": "stale_snapshot_observe_again"}
+        with self.assertRaisesRegex(bridge.BridgeError, "stale_snapshot"):
+            self.client.request("android_click", arguments={"snapshot": "old", "node": "n0"})
+        self.assertEqual(len(FakeAndroid.calls), 1)
+
+    def test_dialer_disallows_service_codes_urls_and_extra_fields(self):
+        for number in ["*123#", "tel:1234", "+880 123", "123;456", "12", "9"*21]:
+            self.assertFalse(bridge.valid_arguments("android_dial", {"number": number}))
+        self.assertTrue(bridge.valid_arguments("android_dial", {"number": "+8801712345678"}))
+
+    def test_screen_actions_require_exact_fresh_target_shape(self):
+        for args in [{}, {"snapshot":"x", "node":"n0", "x":20}, {"snapshot":"x", "node":0}, {"snapshot":"x", "node":"../"}]:
+            self.assertFalse(bridge.valid_arguments("android_click", args))
+        self.assertFalse(bridge.valid_arguments("android_scroll", {"snapshot":"x", "node":"n0", "direction":"diagonal"}))
+        self.assertFalse(bridge.valid_arguments("android_set_text", {"snapshot":"x", "node":"n0", "text":"a"*2001}))
+
+    def test_launch_package_is_data_not_a_url(self):
+        self.assertTrue(bridge.valid_arguments("android_open_package", {"package":"com.example.app"}))
+        for package in ["https://bad", "com.good/evil", "com.good;echo"]:
+            self.assertFalse(bridge.valid_arguments("android_open_package", {"package":package}))
 
 
 if __name__ == "__main__":

@@ -44,9 +44,9 @@ jobs:
       - name: Prepare phone download
         run: |
           mkdir -p dist
-          cp app/build/outputs/apk/debug/app-debug.apk dist/Hermes-Bridge-0.3.0.apk
+          cp app/build/outputs/apk/debug/app-debug.apk dist/Hermes-Bridge-0.4.0.apk
           cd dist
-          sha256sum Hermes-Bridge-0.3.0.apk > SHA256SUMS.txt
+          sha256sum Hermes-Bridge-0.4.0.apk > SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
           name: Hermes-Bridge-APK
@@ -76,4 +76,4 @@ jobs:
           BUILD_SHA: ${{ github.sha }}
           RUN_NUMBER: ${{ github.run_number }}
         run: |
-          gh release create "dev-${RUN_NUMBER}" dist/* --target "$BUILD_SHA" --prerelease --title "Hermes Bridge 0.3.0 • device test ${RUN_NUMBER}" --notes 'Development APK 0.3.0: authenticated Home/Back, Settings and allowlisted WhatsApp/Facebook/Messenger/Telegram/Chrome/Termux launches. Android acceptance requires visual device verification. No screen reading, typing or messaging. Updated MCP adapter/setup is required for the new tools; keep the private Python launcher. Development signing cache improves continuity but may be evicted; first update from an older runner key can require Bridge-only reinstall.'
+          gh release create "dev-${RUN_NUMBER}" dist/* --target "$BUILD_SHA" --prerelease --title "Hermes Bridge 0.4.0 • device test ${RUN_NUMBER}" --notes 'Development APK 0.4.0: opt-in screen observations, stale-node checked click/long-click/scroll/text entry, launchable-app discovery, dialer, TTS, quick settings and basic device state. CI protocol tests use fake Android handlers; actual app workflows need phone verification. Install the matching adapter update and enable screen control explicitly. No live call audio or guaranteed background uptime. Development signing cache may be evicted.'

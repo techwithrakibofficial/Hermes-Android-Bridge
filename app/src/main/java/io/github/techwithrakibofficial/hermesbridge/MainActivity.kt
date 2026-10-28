@@ -69,9 +69,9 @@ class MainActivity : ComponentActivity() {
                     style = MaterialTheme.typography.labelLarge)
                 Text("Your agent.\nYour phone.", style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Bold)
-                Text("Companion setup • v0.3.0", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Companion setup • v0.4.0", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 StatusCard("01  Accessibility", if (connected) "Service connected" else "Service not connected") {
-                    Text("Home ও Back action পরীক্ষা করতে এই service নিজে enable করুন। এই version screen content পড়ে না।")
+                    Text("Service enable করুন। Local bridge ও screen control চালু থাকলে Hermes দৃশ্যমান screen পড়ে click, scroll ও text লিখতে পারবে।")
                     Button(onClick = { showDisclosure = true }, modifier = Modifier.fillMaxWidth()) {
                         Text("Open Accessibility settings")
                     }
@@ -88,7 +88,7 @@ class MainActivity : ComponentActivity() {
                     Text(lastAction, style = MaterialTheme.typography.bodySmall)
                 }
                 StatusCard("02  Voice output", voice.status) {
-                    Text("সুন্দর উচ্চারণের জন্য সঠিক language ও voice বাছুন। Voice-এর মান installed engine-এর ওপর নির্ভর করে।")
+                    Text("মেয়েলি ও পরিষ্কার কণ্ঠ পছন্দ করতে প্রতিটি voice test করে বাছুন। সব engine voice-এর gender জানায় না, তাই নাম দেখে নিশ্চিত করা যায় না। পছন্দটি save হবে এবং Hermes speech-এও চলবে।")
                     Text("Engine: ${voice.engineLabel}", style = MaterialTheme.typography.titleSmall)
                     OutlinedButton(enabled = voice.engines.isNotEmpty(), onClick = { showEngines = true },
                         modifier = Modifier.fillMaxWidth()) { Text("Choose speech engine") }
@@ -123,7 +123,7 @@ class MainActivity : ComponentActivity() {
                         style = MaterialTheme.typography.bodySmall)
                 }
                 StatusCard("03  Local Android bridge", bridge.message) {
-                    Text("Hermes/Termux থেকে secret token দিয়ে Home, Back, Settings ও নির্দিষ্ট app খোলার command চালাতে পারবেন। App-এর নিজস্ব chat UI এখনও যুক্ত হয়নি।")
+                    Text("Telegram-এর Hermes দিয়ে কথা বলুন ও কাজ বলুন। এই bridge সেই agent-কে ফোনের app, screen ও voice চালানোর tool দেয়।")
                     Button(enabled = connected && !bridge.running, onClick = { showBridgeConsent = true },
                         modifier = Modifier.fillMaxWidth()) { Text("Start local bridge") }
                     if (bridge.running) {
@@ -142,8 +142,14 @@ class MainActivity : ComponentActivity() {
                         OutlinedButton(onClick = { BridgeAccessibilityService.stopBridge() },
                             modifier = Modifier.fillMaxWidth()) { Text("Stop local bridge") }
                     }
-                    Text("Available: Home • Back • Settings • Open supported apps", style = MaterialTheme.typography.bodySmall)
-                    Text("App খোলা যাবে। Screen পড়া, click/type বা message পাঠানো এখনও যুক্ত হয়নি।", style = MaterialTheme.typography.bodySmall)
+                    Row {
+                        Switch(checked = bridge.screenEnabled, enabled = bridge.running, onCheckedChange = { BridgeAccessibilityService.allowScreenControl(it) })
+                        Text("Allow screen reading & control", modifier = Modifier.padding(12.dp))
+                    }
+                    Text("Screen চালু করলে দৃশ্যমান personal text Hermes ও আপনার model provider-এর কাছে যেতে পারে। Password field বাদ দেওয়া হয়; সব sensitive text চেনার নিশ্চয়তা নেই। Stop করলে access বন্ধ।", style = MaterialTheme.typography.bodySmall)
+                    Text("Available: Screen • Click • Long press • Scroll • Type • Apps • Dialer • Speak • Quick Settings", style = MaterialTheme.typography.bodySmall)
+                    Text("Call বা message-এর সঠিক ব্যক্তি ও ফল screen দেখে যাচাই করতে হবে। Call audio-তে AI কথোপকথন নেই।", style = MaterialTheme.typography.bodySmall)
+                    OutlinedButton(onClick = { startActivity(Intent(this@MainActivity, ControlTestActivity::class.java)) }, modifier = Modifier.fillMaxWidth()) { Text("Open safe control test") }
                     Text(bridge.lastAction, style = MaterialTheme.typography.bodySmall)
                     Text("Android request গ্রহণ করলেও ফোনের screen দেখে action নিশ্চিত করুন।",
                         style = MaterialTheme.typography.bodySmall)
@@ -155,7 +161,7 @@ class MainActivity : ComponentActivity() {
         if (showBridgeConsent) AlertDialog(
             onDismissRequest = { showBridgeConsent = false },
             title = { Text("Allow local Android commands?") },
-            text = { Text("Bridge চালু থাকলে এই ফোনের secret token থাকা client Home, Back, Settings ও WhatsApp/Facebook/Messenger/Telegram/Chrome/Termux খুলতে পারবে। এটি শুধু 127.0.0.1-এ শোনে। আপনি Stop চাপলে, Accessibility বন্ধ করলে বা process বন্ধ হলে session শেষ হবে।") },
+            text = { Text("Secret token থাকা local Hermes client app খুলতে, dialer খুলতে ও কথা শোনাতে পারবে। আলাদা screen-control switch চালু করলে দৃশ্যমান screen text পড়া, click/scroll এবং text লেখা যাবে; এগুলো message পাঠানো বা setting বদলাতেও ব্যবহৃত হতে পারে। Personal screen text আপনার configured model provider-এর কাছে যেতে পারে। শুধু 127.0.0.1; Stop চাপলে session শেষ।") },
             confirmButton = { TextButton(onClick = {
                 showBridgeConsent = false
                 BridgeAccessibilityService.startBridge()
@@ -165,7 +171,7 @@ class MainActivity : ComponentActivity() {
         if (showDisclosure) AlertDialog(
             onDismissRequest = { showDisclosure = false },
             title = { Text("Enable manual action tests?") },
-            text = { Text("এই version Home/Back button test এবং আপনি local bridge Start করলে authenticated Android command চালায়। Screen পড়া, typing, message পাঠানো বা gesture নেই। Settings থেকে service যেকোনো সময় বন্ধ করতে পারবেন।") },
+            text = { Text("Local bridge ও screen control আপনি চালু করলে এই service দৃশ্যমান app content পড়ে এবং আপনার কাজের জন্য click, scroll ও type করে। Screen text Hermes/model provider-এর কাছে যেতে পারে। Password control বাদ দেওয়া হয়, অন্য personal text থাকতে পারে। App-এর Stop বা Accessibility settings থেকে বন্ধ করতে পারবেন।") },
             confirmButton = { TextButton(onClick = {
                 showDisclosure = false
                 try { startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }
@@ -218,6 +224,6 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onResume() { super.onResume(); voice.refresh() }
-    override fun onStop() { voice.stop(); super.onStop() }
+    override fun onStop() { voice.stop(); BridgeAccessibilityService.refreshRemoteVoice(); super.onStop() }
     override fun onDestroy() { voice.close(); super.onDestroy() }
 }

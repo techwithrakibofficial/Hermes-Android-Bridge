@@ -161,22 +161,27 @@ class VoiceOutput(context: Context) {
     fun saveRate() { preferences.edit().putFloat("speech_rate", rate).apply() }
 
     fun speakTest() {
-        val engine = tts ?: return
-        val voice = selectedVoice ?: return
-        if (!ready) return
+        val text = if (language.startsWith("bn"))
+            "আমি আছি, বলো আজ তোমার দিনটা কেমন গেল? চলো একসঙ্গে একটু গল্প করি, তারপর তোমার কাজের পরিকল্পনাটাও গুছিয়ে নেব।"
+        else "I'm here. Tell me how your day went. We can talk for a while and plan your next steps together."
+        speak(text)
+    }
+
+    fun speak(text: String): Boolean {
+        val engine = tts ?: return false
+        val voice = selectedVoice ?: return false
+        if (!ready || text.length > 2000) return false
         if ((!allowNetwork && voice.isNetworkConnectionRequired) ||
             engine.setVoice(voice) != TextToSpeech.SUCCESS ||
             engine.setSpeechRate(rate) != TextToSpeech.SUCCESS ||
             engine.setPitch(1.0f) != TextToSpeech.SUCCESS) {
             status = "Voice, speed বা pitch apply হয়নি। অন্য voice চেষ্টা করুন।"
-            return
+            return false
         }
-        val text = if (language.startsWith("bn"))
-            "আসসালামু আলাইকুম। আমি আপনার হার্মিস সহকারী। আপনি কেমন আছেন? আমার কথা এখন স্পষ্ট বোঝা যাচ্ছে কি?"
-        else "Hello. I am your Hermes assistant. How are you today? Is this voice clear and comfortable to listen to?"
         status = "Speech queued…"
-        if (engine.speak(text, TextToSpeech.QUEUE_FLUSH, null, "voice-preview") != TextToSpeech.SUCCESS)
-            status = "Speech could not start. Check the selected voice data."
+        val accepted = engine.speak(text, TextToSpeech.QUEUE_FLUSH, null, "voice-output") == TextToSpeech.SUCCESS
+        if (!accepted) status = "Speech could not start. Check the selected voice data."
+        return accepted
     }
 
     fun stop() { tts?.stop(); if (ready) status = "Speech stopped" }

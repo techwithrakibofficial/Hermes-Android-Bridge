@@ -126,6 +126,28 @@ class SetupTests(unittest.TestCase):
         module = setup.load_adapter(Path(__file__).with_name("bridge_mcp.py"))
         self.assertEqual(set(module.TOOL_PATHS), setup.EXPECTED_TOOLS)
 
+    def test_companion_profile_preserves_existing_personality_and_backs_up(self):
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            path = home/"SOUL.md"
+            path.write_text("My existing preferences.\n")
+            setup.install_companion_profile(home)
+            self.assertTrue(path.read_text().startswith("My existing preferences.\n"))
+            self.assertEqual(path.read_text().count(setup.PROFILE_BEGIN), 1)
+            backups = list(home.glob("SOUL.md.before-setup-*"))
+            self.assertEqual(backups[0].read_text(), "My existing preferences.\n")
+            setup.install_companion_profile(home)
+            self.assertEqual(path.read_text().count(setup.PROFILE_BEGIN), 1)
+            self.assertEqual(len(list(home.glob("SOUL.md.before-setup-*"))), 1)
+
+    def test_malformed_profile_markers_do_not_replace_user_content(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)/"SOUL.md"
+            path.write_text(setup.PROFILE_BEGIN + " keep me")
+            with self.assertRaises(setup.SetupError):
+                setup.install_companion_profile(Path(directory))
+            self.assertEqual(path.read_text(), setup.PROFILE_BEGIN + " keep me")
+
 
 if __name__ == "__main__":
     unittest.main()

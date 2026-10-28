@@ -2,6 +2,7 @@ import io.github.techwithrakibofficial.hermesbridge.LocalBridgeServer;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /** Real loopback socket tests; action handler is fake, not Android execution. */
 public class LocalBridgeServerTest {
@@ -55,6 +56,38 @@ public class LocalBridgeServerTest {
             check(request(fresh,"GET","/v1/status",oldToken, "").startsWith("HTTP/1.1 401"), "old token invalid");
             check(request(fresh,"POST","/v1/actions/home",fresh.getToken(),"X-Request-Id: rejected1\r\n").startsWith("HTTP/1.1 503"), "Android rejection represented");
             check(request(fresh,"POST","/v1/actions/home",fresh.getToken(),"X-Request-Id: rejected1\r\n").startsWith("HTTP/1.1 409"), "failed id still reserved");
+        }
+        AtomicReference<String> received = new AtomicReference<>();
+        try (LocalBridgeServer server = new LocalBridgeServer(0, action -> true, (action, body) -> {
+            received.set(action + ":" + body);
+            return action.equals("screen") ? "{\"nodes\":[],\"snapshot\":\"fake\"}" : "{\"accepted\":true}";
+        })) {
+            server.start();
+            String token = server.getToken();
+            check(request(server,"GET","/v1/screen","wrong", "").startsWith("HTTP/1.1 401"), "screen requires current token");
+            check(received.get() == null, "unauthorized screen never dispatched");
+            check(request(server,"GET","/v1/screen",token, "").contains("\"nodes\":[]"), "screen structured observation");
+            for (String observation : new String[]{"apps", "device"}) {
+                check(request(server,"GET","/v1/"+observation,token, "").startsWith("HTTP/1.1 200"), "authenticated observation: " + observation);
+            }
+            for (String action : new String[]{"recents", "notifications", "quick_settings", "stop_speech"}) {
+                check(request(server,"POST","/v1/actions/"+action,token,"X-Request-Id: extended-"+action+"\r\n").contains("\"accepted\":true"), "extended action: " + action);
+            }
+            String body = "{\"text\":\"বাংলা কথা\"}";
+            try (Socket socket = new Socket("127.0.0.1", server.getPort())) {
+                socket.setSoTimeout(4000);
+                byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
+                String head = "POST /v1/commands/speak HTTP/1.1\r\nHost: 127.0.0.1:" + server.getPort() + "\r\nAuthorization: Bearer " + token + "\r\nX-Request-Id: speech001\r\nContent-Type: application/json\r\nContent-Length: " + bytes.length + "\r\n\r\n";
+                socket.getOutputStream().write(head.getBytes(StandardCharsets.US_ASCII));
+                socket.getOutputStream().write(bytes);
+                check(new String(socket.getInputStream().readAllBytes(), StandardCharsets.UTF_8).contains("\"accepted\":true"), "UTF8 command dispatched");
+                check(received.get().equals("speak:"+body), "UTF8 byte length preserved");
+            }
+            check(request(server,"POST","/v1/commands/speak",token,"X-Request-Id: speech001\r\nContent-Type: application/json\r\nContent-Length: 2\r\n").startsWith("HTTP/1.1 409"), "command cannot replay");
+            check(request(server,"POST","/v1/commands/speak",token,"X-Request-Id: toolarge1\r\nContent-Type: application/json\r\nContent-Length: 8193\r\n").startsWith("HTTP/1.1 413"), "large command denied before body read");
+            check(request(server,"POST","/v1/commands/speak",token,"X-Request-Id: transfer1\r\nTransfer-Encoding: chunked\r\n").startsWith("HTTP/1.1 400"), "chunked command denied");
+            check(request(server,"POST","/v1/commands/speak",token,"X-Request-Id: nojson001\r\nContent-Length: 2\r\n").startsWith("HTTP/1.1 400"), "command requires JSON content type");
+            check(request(server,"POST","/v1/commands/shell",token,"X-Request-Id: badcmd001\r\n").startsWith("HTTP/1.1 404"), "no arbitrary command interpreter");
         }
         System.out.println("PASS: " + checks + " loopback protocol checks. Android execution NOT tested.");
     }
