@@ -20,8 +20,8 @@ class SpeechInput(private val context: Context) {
     fun stop() {
         generation++
         handler.removeCallbacksAndMessages(null)
-        recognizer?.cancel()
-        recognizer?.destroy()
+        try { recognizer?.cancel() } catch (_: Exception) { }
+        try { recognizer?.destroy() } catch (_: Exception) { }
         recognizer = null
     }
     fun listen(language: String, networkAllowed: Boolean, partial: (String) -> Unit,
@@ -33,7 +33,7 @@ class SpeechInput(private val context: Context) {
         if (SpeechOutputGate.speaking.value) { failure("Speech is playing; tap mic after it finishes"); return false }
         val ticket = ++generation
         fun fail(message: String) { if (ticket == generation) { stop(); failure(message) } }
-        val onDevice = Build.VERSION.SDK_INT >= 31 && SpeechRecognizer.isOnDeviceRecognitionAvailable(context)
+        val onDevice = try { Build.VERSION.SDK_INT >= 31 && SpeechRecognizer.isOnDeviceRecognitionAvailable(context) } catch (_: Exception) { false }
         if (!networkAllowed && !onDevice) {
             failure("On-device recognition is unavailable. Enable network speech explicitly or use text."); return false
         }
@@ -82,7 +82,7 @@ class SpeechInput(private val context: Context) {
             })
             handler.postDelayed({
                 if (ticket == generation) {
-                    instance.stopListening()
+                    try { instance.stopListening() } catch (_: Exception) { fail("Speech service/permission unavailable; mic paused"); return@postDelayed }
                     handler.postDelayed({ fail("Speech result timed out. Mic paused; tap to resume.") }, 8000)
                 }
             }, 25000)

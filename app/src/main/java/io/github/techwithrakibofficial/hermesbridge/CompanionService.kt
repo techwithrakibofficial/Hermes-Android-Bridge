@@ -74,7 +74,7 @@ class CompanionService : Service() {
     override fun onDestroy() {
         runtime.onIdle = null
         runtime.allowCapture(false)
-        runtime.pauseVoice("Voice service stopped")
+        if (runtime.state.value.phase !in listOf("paused", "idle")) runtime.pauseVoice("Voice service stopped")
         scope.cancel()
         super.onDestroy()
     }

@@ -14,10 +14,11 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.util.UUID
 
-data class ChatLine(val role: String, val text: String, val id: String = UUID.randomUUID().toString())
+data class ChatLine(val role: String, val text: String, val id: String = UUID.randomUUID().toString(), val conversationId: String = "")
+data class ChatSummary(val id: String, val title: String)
 data class ToolApproval(val id: String, val title: String, val canAllow: Boolean)
 data class CompanionState(
-    val lines: List<ChatLine> = emptyList(), val phase: String = "idle", val status: String = "প্রথমে Bridge setup ও companion server চালু করুন।",
+    val lines: List<ChatLine> = emptyList(), val conversations: List<ChatSummary> = emptyList(), val conversationId: String = "", val phase: String = "idle", val status: String = "প্রথমে Bridge setup ও companion server চালু করুন।",
     val connected: Boolean = false, val model: String = "Existing Hermes", val busy: Boolean = false,
     val partial: String = "", val automatic: Boolean = false, val speakReplies: Boolean = true,
     val networkSpeech: Boolean = false, val language: String = "bn-BD", val approval: ToolApproval? = null,
@@ -43,7 +44,8 @@ class CompanionRuntime private constructor(private val context: Context) {
     private var canCapture = false
     private val suppressedJobs = mutableSetOf<String>()
     private var voiceUntil = 0L
-    private val mutable = MutableStateFlow(CompanionState(lines = readHistory(), busy = active != null,
+    private var history = readHistory()
+    private val mutable = MutableStateFlow(CompanionState(lines = history.filter { it.conversationId == conversation }, conversations = summaries(), conversationId = conversation, busy = active != null,
         speakReplies = prefs.getBoolean("speak", true), networkSpeech = prefs.getBoolean("network_speech", false),
         language = prefs.getString("language", "bn-BD") ?: "bn-BD"))
     val state = mutable.asStateFlow()
@@ -63,12 +65,24 @@ class CompanionRuntime private constructor(private val context: Context) {
     }
     private fun readHistory(): List<ChatLine> = try {
         val rows = JSONArray(prefs.getString("messages", "[]"))
-        (0 until rows.length()).map { val row = rows.getJSONObject(it); ChatLine(row.getString("role"), row.getString("text"), row.getString("id")) }.takeLast(100)
+        (0 until rows.length()).map { val row = rows.getJSONObject(it); ChatLine(row.getString("role"), row.getString("text"), row.getString("id"), row.optString("conversation", conversation)) }.takeLast(100)
     } catch (_: Exception) { emptyList() }
+    private fun summaries(): List<ChatSummary> = history.map { it.conversationId }.distinct().takeLast(10).reversed().map { id ->
+        ChatSummary(id, history.firstOrNull { it.conversationId == id && it.role == "user" }?.text?.take(60) ?: "নতুন conversation")
+    }
     private fun line(role: String, text: String) {
-        val lines = (state.value.lines + ChatLine(role, text.take(24000))).takeLast(100)
-        mutable.value = state.value.copy(lines = lines)
-        prefs.edit().putString("messages", JSONArray(lines.map { JSONObject().put("role", it.role).put("text", it.text).put("id", it.id) }).toString()).apply()
+        history = (history + ChatLine(role, text.take(24000), conversationId = conversation)).takeLast(100)
+        val keep = history.map { it.conversationId }.distinct().takeLast(10).toSet()
+        history = history.filter { it.conversationId in keep }
+        mutable.value = state.value.copy(lines = history.filter { it.conversationId == conversation }, conversations = summaries(), conversationId = conversation)
+        prefs.edit().putString("messages", JSONArray(history.map { JSONObject().put("role", it.role).put("text", it.text).put("id", it.id).put("conversation", it.conversationId) }).toString()).apply()
+    }
+    fun selectChat(id: String) {
+        if (active != null || history.none { it.conversationId == id }) return
+        pauseVoice("Conversation selected")
+        conversation = id; prefs.edit().putString("conversation", id).apply()
+        mutable.value = state.value.copy(lines = history.filter { it.conversationId == id }, conversationId = id)
+        status("idle", "আগের conversation চালিয়ে যেতে পারেন।")
     }
     private fun token() = BridgeAccessibilityService.bridge.value.takeIf { it.running }?.token.orEmpty()
     private fun status(phase: String, text: String) { mutable.value = state.value.copy(phase = phase, status = text, automatic = gate.automatic()) }
@@ -197,7 +211,7 @@ class CompanionRuntime private constructor(private val context: Context) {
     }
     private fun requestFocus(): Boolean {
         if (audio.mode in listOf(AudioManager.MODE_IN_CALL, AudioManager.MODE_IN_COMMUNICATION)) return false
-        return audio.requestAudioFocus(focus) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+        return try { audio.requestAudioFocus(focus) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED } catch (_: Exception) { false }
     }
     fun allowCapture(allowed: Boolean) { canCapture = allowed }
     fun automatic(enabled: Boolean) { gate.setAutomatic(enabled); mutable.value = state.value.copy(automatic = enabled) }
@@ -235,7 +249,7 @@ class CompanionRuntime private constructor(private val context: Context) {
                 status("idle", "উত্তর শেষ।")
                 if (again) handler.postDelayed({
                     if (gate.ticket() == ticket && gate.automatic() && canCapture && !SpeechOutputGate.speaking.value) listen()
-                }, 500) else { audio.abandonAudioFocusRequest(focus); onIdle?.invoke() }
+                }, 500) else { runCatching { audio.abandonAudioFocusRequest(focus) }; onIdle?.invoke() }
                 return
             }
             if (!voice.speak(chunks[index]) finished@ { ok ->
@@ -248,7 +262,7 @@ class CompanionRuntime private constructor(private val context: Context) {
     fun pauseVoice(reason: String) {
         gate.pause(); input.stop(); voice.stop(); voiceUntil = 0
         handler.removeCallbacksAndMessages(null)
-        audio.abandonAudioFocusRequest(focus)
+        runCatching { audio.abandonAudioFocusRequest(focus) }
         mutable.value = state.value.copy(partial = "", automatic = false)
         if (active == null) status("paused", reason)
         if (active == null) onIdle?.invoke()
@@ -272,7 +286,7 @@ class CompanionRuntime private constructor(private val context: Context) {
         pauseVoice("New conversation")
         conversation = UUID.randomUUID().toString()
         prefs.edit().putString("conversation", conversation).apply()
-        if (clear) { prefs.edit().remove("messages").apply(); mutable.value = state.value.copy(lines = emptyList()) }
+        if (clear) { history = emptyList(); prefs.edit().remove("messages").apply(); mutable.value = state.value.copy(lines = emptyList(), conversations = emptyList(), conversationId = conversation) }
         else line("notice", "নতুন conversation")
         status("idle", "নতুন conversation প্রস্তুত।")
     }

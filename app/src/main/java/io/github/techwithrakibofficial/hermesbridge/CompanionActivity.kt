@@ -14,6 +14,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -58,6 +60,7 @@ class CompanionActivity : ComponentActivity() {
         var requestedAutomatic by remember { mutableStateOf(false) }
         var micDisclosure by remember { mutableStateOf(false) }
         var clearDialog by remember { mutableStateOf(false) }
+        var historyDialog by remember { mutableStateOf(false) }
         val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
             if (granted[Manifest.permission.RECORD_AUDIO] == true || checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) startMic(requestedAutomatic)
             else runtime.pauseVoice("Mic permission denied. Text chat remains available.")
@@ -77,7 +80,8 @@ class CompanionActivity : ComponentActivity() {
                         Text("HERMES", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                         Text("তোমার companion", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                     }
-                    TextButton(enabled = !state.busy, onClick = { runtime.newChat() }) { Text("New chat") }
+                    TextButton(enabled = !state.busy && state.conversations.isNotEmpty(), onClick = { historyDialog = true }) { Text("History") }
+                    TextButton(enabled = !state.busy, onClick = { runtime.newChat(); draft = "" }) { Text("New chat") }
                 }
                 Row(Modifier.fillMaxWidth().padding(horizontal = 18.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(if (bridge.running) "Android ●" else "Android setup needed", color = if (bridge.running) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
@@ -157,20 +161,24 @@ class CompanionActivity : ComponentActivity() {
                         }) { Text("Send") }
                     }
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        OutlinedButton(enabled = !state.busy && bridge.running && state.connected && state.phase != "listening", modifier = Modifier.weight(1f), onClick = { requestMic(false) }) { Text(if (state.phase == "speaking") "Interrupt & mic" else "Mic • কথা বলুন") }
+                        OutlinedButton(enabled = !state.busy && bridge.running && state.connected && state.phase != "listening", modifier = Modifier.weight(1f), onClick = { requestMic(state.automatic) }) { Text(if (state.phase == "speaking") "Interrupt & mic" else "Mic • কথা বলুন") }
                         Button(onClick = { runtime.stopTask() }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.errorContainer, contentColor = MaterialTheme.colorScheme.onErrorContainer)) { Text("Stop") }
                     }
                 }
             }
         }
         if (micDisclosure) AlertDialog(onDismissRequest = { micDisclosure = false }, title = { Text("Microphone ব্যবহার করবেন?") },
-            text = { Text("আপনি mic চাপলে Android speech service আপনার কথা text করবে এবং final text Hermes-এ একবার পাঠাবে। Network speech allow করলে audio service provider-এর কাছে যেতে পারে। Mic চালু থাকলে notification থাকবে। Stop-এ mic/speech থামবে।") },
+            text = { Text("আপনি mic চাপলে Android speech service আপনার কথা text করবে এবং final text Hermes-এ একবার পাঠাবে। Network speech allow করলে audio service provider-এর কাছে যেতে পারে। Notification permission দিলে চলতি voice/task-এর Stop notification পাবেন। Stop-এ mic/speech থামবে।") },
             confirmButton = { TextButton(onClick = { micDisclosure = false; getPreferences(MODE_PRIVATE).edit().putBoolean("mic_consent", true).apply(); requestMic(requestedAutomatic) }) { Text("Continue") } },
             dismissButton = { TextButton(onClick = { micDisclosure = false }) { Text("Cancel") } })
         state.approval?.let { approval -> AlertDialog(onDismissRequest = {}, title = { Text("Tool approval") },
             text = { SelectionContainer { Text(approval.title) } },
             confirmButton = { TextButton(enabled = approval.canAllow, onClick = { runtime.approve(true) }) { Text("Allow once") } },
             dismissButton = { TextButton(onClick = { runtime.approve(false) }) { Text("Deny") } }) }
+        if (historyDialog) AlertDialog(onDismissRequest = { historyDialog = false }, title = { Text("Conversations") },
+            text = { Column(Modifier.heightIn(max = 360.dp).verticalScroll(rememberScrollState())) {
+                state.conversations.forEach { chat -> TextButton(onClick = { historyDialog = false; draft = ""; runtime.selectChat(chat.id) }) { Text((if (chat.id == state.conversationId) "● " else "") + chat.title, maxLines = 2) } }
+            } }, confirmButton = { TextButton(onClick = { historyDialog = false }) { Text("Close") } })
         if (clearDialog) AlertDialog(onDismissRequest = { clearDialog = false }, title = { Text("App history মুছবেন?") },
             text = { Text("এই app-এর saved chat মুছবে। Hermes-এর memory/session archive মুছবে না।") },
             confirmButton = { TextButton(onClick = { clearDialog = false; runtime.newChat(clear = true) }) { Text("Clear app history") } },

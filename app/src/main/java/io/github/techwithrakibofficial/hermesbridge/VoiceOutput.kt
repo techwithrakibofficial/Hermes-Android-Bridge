@@ -69,7 +69,7 @@ class VoiceOutput(context: Context) {
         voices = emptyList()
         selectedVoice = null
         stop()
-        tts?.shutdown()
+        runCatching { tts?.shutdown() }
         status = "Loading speech engine…"
         tts = TextToSpeech(appContext, { result ->
             // Always post so the constructor has assigned tts before this runs.
@@ -226,7 +226,7 @@ class VoiceOutput(context: Context) {
         val callback = completion
         completion = null
         utterance = null
-        tts?.stop()
+        runCatching { tts?.stop() }
         SpeechOutputGate.release(this)
         if (ready) status = "Speech stopped"
         callback?.invoke(false)
@@ -235,7 +235,7 @@ class VoiceOutput(context: Context) {
         disposed = true
         generation++
         stop()
-        tts?.shutdown()
+        runCatching { tts?.shutdown() }
         tts = null
     }
 }
