@@ -29,3 +29,6 @@ Latest user report: Back works; after Stop, status fails to connect. Record as u
 
 ## Installed Hermes inspection
 User supplied direct output: PRoot distro alias ubuntu; /usr/local/bin/hermes; v0.15.2 (2026.5.29.2); Python 3.14.4; OpenAI SDK 2.24.0; project /usr/local/lib/python3.14/dist-packages. Top-level CLI includes plugins and mcp. Adapter contract and live gateway status remain unverified. Next read-only check is plugins/mcp --help, not install/update.
+
+## MCP adapter staging
+17 tests pass locally on Python3.12 for private token pairing, fake loopback HTTP, no automatic retries, argument rejection and legacy stdio handshake/tool discovery. Real Hermes MCP registration/discovery, PRoot-to-Android network access and live Android tool execution remain pending. Python3.12/3.14 CI added. Existing Hermes/Telegram runtime unchanged.
