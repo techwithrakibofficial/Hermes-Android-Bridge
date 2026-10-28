@@ -26,14 +26,18 @@ import java.util.Locale
 class MainActivity : ComponentActivity() {
     private var tts: TextToSpeech? = null
     private var ttsReady by mutableStateOf(false)
+    private var speechRate by mutableFloatStateOf(0.70f)
+    private val voicePreferences by lazy { getSharedPreferences("voice", MODE_PRIVATE) }
     private var speechState by mutableStateOf("Initializing speech engine…")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        speechRate = voicePreferences.getFloat("speech_rate", 0.70f).coerceIn(0.25f, 1.25f)
         tts = TextToSpeech(this) { result ->
             runOnUiThread {
                 val language = if (result == TextToSpeech.SUCCESS) tts?.setLanguage(Locale.US) else null
                 ttsReady = language != null && language >= TextToSpeech.LANG_AVAILABLE
+                if (ttsReady) tts?.setSpeechRate(speechRate)
                 speechState = if (ttsReady) "Speech engine ready" else "Speech unavailable. Check installed TTS engine/language."
             }
         }
@@ -67,7 +71,7 @@ class MainActivity : ComponentActivity() {
                     style = MaterialTheme.typography.labelLarge)
                 Text("Your agent.\nYour phone.", style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Bold)
-                Text("Companion setup • v0.1.0", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Companion setup • v0.1.1", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 StatusCard("01  Accessibility", if (connected) "Service connected" else "Service not connected") {
                     Text("Home ও Back action পরীক্ষা করতে এই service নিজে enable করুন। এই version screen content পড়ে না।")
                     Button(onClick = { showDisclosure = true }, modifier = Modifier.fillMaxWidth()) {
@@ -87,11 +91,36 @@ class MainActivity : ComponentActivity() {
                 }
                 StatusCard("02  Voice output", speechState) {
                     Text("এটি Android app-এর আলাদা TTS test। আগের Termux TTS configuration পরিবর্তন করবে না।")
+                    Text("কথার গতি: ${String.format(Locale.US, "%.2f", speechRate)}", style = MaterialTheme.typography.titleSmall)
+                    Text("বামে নিলে ধীরে, ডানে নিলে দ্রুত বলবে। Speed বদলে আবার Test চাপুন।", style = MaterialTheme.typography.bodySmall)
+                    Slider(
+                        value = speechRate,
+                        onValueChange = {
+                            tts?.stop()
+                            speechRate = it
+                            speechState = if (ttsReady) "Speed changed. Tap Test voice output." else "Speech engine not ready"
+                        },
+                        onValueChangeFinished = {
+                            voicePreferences.edit().putFloat("speech_rate", speechRate).apply()
+                        },
+                        valueRange = 0.25f..1.25f,
+                        steps = 19
+                    )
+                    TextButton(onClick = {
+                        tts?.stop()
+                        speechRate = 0.70f
+                        voicePreferences.edit().putFloat("speech_rate", speechRate).apply()
+                        speechState = if (ttsReady) "Slower default restored. Tap Test voice output." else "Speech engine not ready"
+                    }) { Text("Reset speed • 0.70") }
                     Button(enabled = ttsReady, onClick = {
-                        speechState = "Speech queued…"
-                        val result = tts?.speak("Hermes Android Bridge is ready for device testing.",
-                            TextToSpeech.QUEUE_FLUSH, null, "device-test")
-                        if (result != TextToSpeech.SUCCESS) speechState = "Speech could not be queued"
+                        if (tts?.setSpeechRate(speechRate) != TextToSpeech.SUCCESS) {
+                            speechState = "Speech engine could not apply this speed"
+                        } else {
+                            speechState = "Speech queued…"
+                            val result = tts?.speak("Hermes Android Bridge is ready for device testing.",
+                                TextToSpeech.QUEUE_FLUSH, null, "device-test")
+                            if (result != TextToSpeech.SUCCESS) speechState = "Speech could not be queued"
+                        }
                     }, modifier = Modifier.fillMaxWidth()) { Text("Test voice output") }
                     TextButton(onClick = { tts?.stop(); speechState = "Speech stopped" }) { Text("Stop speech") }
                 }

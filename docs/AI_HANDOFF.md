@@ -26,11 +26,11 @@ Independently verified:
 - APK asset size: 9,287,944 bytes.
 
 ## 4. Exact stopping point
-First development APK is ready. Device installation, screen appearance, audible TTS and actual Accessibility actions have NOT been tested. Waiting for the user's phone results. Hermes connectivity remains explicitly unavailable in the app.
+User reports the initial Bridge app functions work, but speech is too fast to understand. This is user-reported device evidence, not an automated or independently observed test. Individual Home/Back/disconnect checks were not separately enumerated. Version 0.1.1 adds a saved speed slider (0.25–1.25, default 0.70), resets to the slower default, and checks engine rate errors. Build verification pending. Hermes connectivity remains explicitly unavailable in the app.
 
 ## 5. Outstanding tasks and blockers
-- User device tests in docs/DEVICE_TEST.md.
-- EMI policy may block Accessibility; availability unknown.
+- Verify slower speech and saved slider value on the phone; obtain separately itemized tests where needed.
+- User says all companion functions work, suggesting Accessibility is available; no explicit individual action test report yet.
 - Secure loopback bridge, pairing/authentication, protocol/security tests.
 - Supported Hermes v0.15.2 integration inspection and optional adapter.
 - Chat, microphone input and voice session controls.
@@ -38,7 +38,7 @@ First development APK is ready. Device installation, screen appearance, audible 
 - CI reports action runtime deprecation warnings; successful build is verified, future action maintenance remains.
 
 ## 6. Single next action
-Install dev-2 APK and report Accessibility enablement, Home/Back visible behavior, audible TTS, and whether existing Telegram still works.
+Build version 0.1.1, then test the default speech speed and saved slider value on the phone.
 
 ## 7. Continuation commands and files
 - Device procedure: docs/DEVICE_TEST.md.
