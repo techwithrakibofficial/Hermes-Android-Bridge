@@ -28,6 +28,8 @@ class FakeAndroid(BaseHTTPRequestHandler):
         pass
 
     def do_GET(self):
+        if self.path == "/v1/apps" and self.rejection:
+            self.answer(self.rejection); return
         if self.path == "/v1/screen":
             self.answer({"snapshot": "fresh", "nodes": [{"id": "n0", "text": "বাংলা"}]}); return
         if self.path == "/v1/apps":
@@ -246,6 +248,19 @@ class AdapterTests(unittest.TestCase):
         self.assertTrue(bridge.valid_arguments("android_open_package", {"package":"com.example.app"}))
         for package in ["https://bad", "com.good/evil", "com.good;echo"]:
             self.assertFalse(bridge.valid_arguments("android_open_package", {"package":package}))
+
+    def test_slow_catalog_is_specific_read_error_without_action_retry(self):
+        self.client.pair(TOKEN)
+        FakeAndroid.rejection = {"accepted": False, "error": "apps_loading"}
+        with self.assertRaisesRegex(bridge.BridgeError, "Android: apps_loading"):
+            self.client.request("android_list_apps")
+        self.assertEqual(FakeAndroid.calls, [])
+
+    def test_known_package_can_open_without_a_prior_app_list(self):
+        self.client.pair(TOKEN)
+        self.client.request("android_open_package", arguments={"package":"io.github.techwithrakibofficial.hermesbridge"})
+        self.assertEqual([row[0] for row in FakeAndroid.calls], ["/v1/commands/open-package"])
+        self.assertEqual(json.loads(FakeAndroid.bodies[0][2])["package"], "io.github.techwithrakibofficial.hermesbridge")
 
 
 if __name__ == "__main__":

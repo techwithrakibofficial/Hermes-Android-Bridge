@@ -98,7 +98,7 @@ public final class LocalBridgeServer implements AutoCloseable {
         if (headers.containsKey("transfer-encoding") || (!command && !headers.getOrDefault("content-length", "0").equals("0")))
             throw new BadRequest(400, "request_body_not_supported");
         if (request[0].equals("GET") && request[1].equals("/v1/status")) {
-            respondJson(socket, 200, "{\"bridge\":\"ready\",\"version\":\"0.4.0\",\"allowed_actions\":[\"home\",\"back\",\"settings\",\"open_app\",\"screen\",\"click\",\"long_click\",\"scroll\",\"set_text\",\"apps\",\"open_package\",\"dial\",\"speak\",\"device\",\"recents\",\"notifications\",\"quick_settings\",\"stop_speech\"],\"supported_apps\":[\"whatsapp\",\"facebook\",\"messenger\",\"telegram\",\"chrome\",\"termux\"]}");
+            respondJson(socket, 200, "{\"bridge\":\"ready\",\"version\":\"0.4.1\",\"allowed_actions\":[\"home\",\"back\",\"settings\",\"open_app\",\"screen\",\"click\",\"long_click\",\"scroll\",\"set_text\",\"apps\",\"open_package\",\"dial\",\"speak\",\"device\",\"recents\",\"notifications\",\"quick_settings\",\"stop_speech\"],\"supported_apps\":[\"whatsapp\",\"facebook\",\"messenger\",\"telegram\",\"chrome\",\"termux\"]}");
             return;
         }
         if (request[0].equals("GET") && Arrays.asList("/v1/screen", "/v1/apps", "/v1/device").contains(request[1])) {

@@ -69,7 +69,7 @@ class MainActivity : ComponentActivity() {
                     style = MaterialTheme.typography.labelLarge)
                 Text("Your agent.\nYour phone.", style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Bold)
-                Text("Companion setup • v0.4.0", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Companion setup • v0.4.1", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 StatusCard("01  Accessibility", if (connected) "Service connected" else "Service not connected") {
                     Text("Service enable করুন। Local bridge ও screen control চালু থাকলে Hermes দৃশ্যমান screen পড়ে click, scroll ও text লিখতে পারবে।")
                     Button(onClick = { showDisclosure = true }, modifier = Modifier.fillMaxWidth()) {

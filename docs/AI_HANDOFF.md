@@ -51,15 +51,33 @@ SHA2562671a19802bd77954172444eaef79c099e7655841cbab6c7315ca9321ac59fed.
 Actual0.4 phone actions remain pending. Do not
 claim broad messaging/call automation is phone-tested or a final universal agent.
 
+## 0.4 phone evidence and current repair
+User installed0.4, enabled screen control and ran pinned updater; gateway banner
+shown. Telegram actual tool output: bridge ready/version0.4.0 and device state
+TECNO KM9, Android16/SDK36, screen_control_enabled true, voice_ready false. These
+two read tools work. They do NOT prove screen/click/type or voice functionality.
+The safe acceptance workflow stopped at android_list_apps with generic HTTP503;
+subsequent bridge status remained ready. No app-open/screen/click/text ran.
+No home channel set was also reported; /sethome may be used in the user's verified
+private Telegram chat for later delivery. It is not this listing failure.
+
+Confirmed code defect: full PackageManager query and label-loading comparator
+ran on UI thread under1.2s dispatch wait; loadLabel repeated during sorting.
+Likely cause of reported503, not proven without phone logs. No claim of missing
+permission, locked screen or EMI cause.0.4.1 moves catalog to one background
+loader, caps and loads labels once, shares pending work and caches30s. Read wait
+2.8s returns apps_loading if unfinished. Exact-package open no longer queries
+all installed apps. Specific main-dispatch codes and voice_status/catalog state
+added to device diagnostics. Existing19-tool adapter remains compatible.
+
 ## Single next action
-Follow docs/UPGRADE_0_4.md: install dev-12 APK, start bridge and enable screen
-control, copy fresh pairing export into native Termux, run the pinned updater
-with --install-sdk --companion, then test the safe control activity via Telegram.
-No new Termux session required: Ctrl+C the current foreground gateway first.
-Code head d616cfb14878b1a7652212e2de49207118f9490f; adapter pin
-b08f55fd44255222d6a787472d944fd93fb64656,
-SHA2562b5c1b1df0b5daa781749941950c271d99750093bfb6547a754b944a00b23902.
-Setup SHA2568bb988ef62eda3b4c2828fb3f8d1cc707f130d635ccae946a4624b6b8e841908.
+Build/lint/test0.4.1, then publish the APK and update this checkpoint. After install,
+renew pairing with the existing verified updater (SDK/provider/Telegram unchanged).
+First test explicit Bridge package open so app listing cannot block the safe UI
+acceptance workflow; independently verify catalog and voice diagnostics.
+Pinned0.4 updater remains d616cfb14878b1a7652212e2de49207118f9490f,
+SHA2568bb988ef62eda3b4c2828fb3f8d1cc707f130d635ccae946a4624b6b8e841908.
+No repeated Hermes installation, gateway recovery or credential reset.
 
 ## Still unimplemented or unverified
 - No live carrier/WhatsApp call audio, Telecom dialer role, incoming-call answer/

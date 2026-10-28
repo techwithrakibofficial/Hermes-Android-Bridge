@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.util.concurrent.FutureTask
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
+import java.util.concurrent.ExecutionException
 
 data class LocalBridgeState(
     val running: Boolean = false,
@@ -30,6 +32,8 @@ data class LocalBridgeState(
 
 class BridgeAccessibilityService : AccessibilityService() {
     @Volatile private var server: LocalBridgeServer? = null
+    @Volatile private var appCatalog: AppCatalog? = null
+    @Volatile private var lastDispatchError = "none"
     private val screen = ScreenController(this)
     private var remoteVoice: VoiceOutput? = null
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -53,26 +57,44 @@ class BridgeAccessibilityService : AccessibilityService() {
         try {
             lateinit var candidate: LocalBridgeServer
             fun dispatch(action: String, body: String): String {
+                if (server !== candidate || !candidate.isRunning) return ScreenController.error("bridge_stopped").toString()
+                // Package queries and label resources must not block UI, TTS init or screen actions.
+                if (action == "apps") return readAppCatalog(candidate).toString()
                 val task = FutureTask<String> {
                     if (server !== candidate || !candidate.isRunning) ScreenController.error("bridge_stopped").toString()
                     else executeCommand(action, body).toString()
                 }
                 mainHandler.post(task)
                 return try { task.get(1200, TimeUnit.MILLISECONDS) }
-                catch (e: Exception) {
+                catch (_: TimeoutException) {
                     task.cancel(false)
                     mainHandler.removeCallbacks(task)
-                    throw IllegalStateException("Action not confirmed", e)
+                    lastDispatchError = if (action == "screen") "screen_observation_timed_out" else "android_dispatch_timed_out"
+                    ScreenController.error(lastDispatchError).toString()
+                } catch (_: ExecutionException) {
+                    lastDispatchError = "android_handler_failed"
+                    ScreenController.error(lastDispatchError).toString()
+                } catch (_: InterruptedException) {
+                    task.cancel(false)
+                    mainHandler.removeCallbacks(task)
+                    Thread.currentThread().interrupt()
+                    ScreenController.error("android_dispatch_interrupted").toString()
                 }
             }
             candidate = LocalBridgeServer(PORT,
                 { action -> JSONObject(dispatch(action, "{}")).optBoolean("accepted", false) },
                 { action, body -> dispatch(action, body) })
             server = candidate
+            appCatalog = AppCatalog { loadAppCatalog() }.also { it.warm() }
+            lastDispatchError = "none"
             candidate.start()
             remoteVoice = VoiceOutput(this)
             bridgeState.value = LocalBridgeState(true, candidate.token, "Listening on 127.0.0.1:$PORT")
         } catch (_: Exception) {
+            appCatalog?.close()
+            appCatalog = null
+            remoteVoice?.close()
+            remoteVoice = null
             server?.close()
             server = null
             bridgeState.value = LocalBridgeState(message = "Bridge could not start. Check if port $PORT is already in use, then try again.")
@@ -96,12 +118,12 @@ class BridgeAccessibilityService : AccessibilityService() {
                     return ScreenController.error("invalid_arguments")
                 screen.act(action, args)
             }
-            "apps" -> listApps()
             "device" -> deviceState()
             "open-package" -> {
                 if (!keys("package") || !string("package", 180)) return ScreenController.error("invalid_arguments")
                 val pkg = args.getString("package")
-                if (launchableApps().none { it.activityInfo.packageName == pkg }) return ScreenController.error("app_not_launchable")
+                if (!pkg.matches(Regex("[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+"))) return ScreenController.error("invalid_package")
+                // getLaunchIntentForPackage validates the exact package without a full catalog query.
                 ScreenController.accepted(packageManager.getLaunchIntentForPackage(pkg)?.let { launchIntent(it) } ?: false)
             }
             "dial" -> {
@@ -137,13 +159,31 @@ class BridgeAccessibilityService : AccessibilityService() {
     }
 
     @Suppress("DEPRECATION")
-    private fun launchableApps() = packageManager.queryIntentActivities(
-        Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER), PackageManager.MATCH_ALL)
-    private fun listApps(): JSONObject {
-        val apps = launchableApps().distinctBy { it.activityInfo.packageName }.sortedBy { it.loadLabel(packageManager).toString() }
-        return JSONObject().put("apps", JSONArray(apps.take(150).map {
-            JSONObject().put("package", it.activityInfo.packageName).put("label", it.loadLabel(packageManager).toString().take(100))
-        })).put("truncated", apps.size > 150)
+    private fun loadAppCatalog(): AppCatalog.Snapshot {
+        val apps = packageManager.queryIntentActivities(
+            Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER), PackageManager.MATCH_ALL)
+            .distinctBy { it.activityInfo.packageName }
+        var fallbacks = 0
+        val entries = apps.take(150).map {
+            val pkg = it.activityInfo.packageName
+            val label = try { it.loadLabel(packageManager).toString() }
+            catch (_: RuntimeException) { fallbacks++; pkg }
+            AppCatalog.Entry(pkg, label)
+        }.sortedBy { it.label } // Sort plain strings; load each label only once.
+        return AppCatalog.Snapshot(entries, apps.size > 150, fallbacks)
+    }
+    private fun readAppCatalog(candidate: LocalBridgeServer): JSONObject {
+        if (getSystemService(KeyguardManager::class.java).isKeyguardLocked) return ScreenController.error("phone_locked")
+        val catalog = appCatalog ?: return ScreenController.error("apps_catalog_unavailable")
+        val result = catalog.read(2800)
+        // Stop/session rotation must discard results from a read already in flight.
+        if (server !== candidate || !candidate.isRunning || appCatalog !== catalog)
+            return ScreenController.error("bridge_stopped")
+        val data = result.snapshot ?: return ScreenController.error(result.error ?: "apps_query_failed")
+        return JSONObject().put("apps", JSONArray(data.apps.map {
+            JSONObject().put("package", it.packageName).put("label", it.label)
+        })).put("truncated", data.truncated).put("label_fallbacks", data.labelFallbacks)
+            .put("cache_seconds", 30)
     }
     private fun deviceState(): JSONObject {
         val battery = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
@@ -154,6 +194,10 @@ class BridgeAccessibilityService : AccessibilityService() {
             .put("battery_percent", if (level >= 0 && scale > 0) level * 100 / scale else -1)
             .put("screen_control_enabled", bridgeState.value.screenEnabled)
             .put("voice_ready", remoteVoice?.ready == true)
+            .put("voice_status", remoteVoice?.status ?: "not_started")
+            .put("voice_language", remoteVoice?.language ?: "unset")
+            .put("app_catalog_state", appCatalog?.state() ?: "stopped")
+            .put("last_dispatch_error", lastDispatchError)
             .put("notice", "Basic state only; this does not diagnose hardware, carrier or app failures.")
     }
 
@@ -175,6 +219,8 @@ class BridgeAccessibilityService : AccessibilityService() {
     }
 
     private fun stopSession() {
+        appCatalog?.close()
+        appCatalog = null
         screen.clear()
         remoteVoice?.close()
         remoteVoice = null

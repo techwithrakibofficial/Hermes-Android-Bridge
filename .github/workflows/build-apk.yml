@@ -23,8 +23,9 @@ jobs:
       - name: Test local bridge protocol over real sockets
         run: |
           mkdir -p /tmp/hermes-protocol-test
-          javac -d /tmp/hermes-protocol-test app/src/main/java/io/github/techwithrakibofficial/hermesbridge/LocalBridgeServer.java tests/LocalBridgeServerTest.java
+          javac -d /tmp/hermes-protocol-test app/src/main/java/io/github/techwithrakibofficial/hermesbridge/LocalBridgeServer.java app/src/main/java/io/github/techwithrakibofficial/hermesbridge/AppCatalog.java tests/LocalBridgeServerTest.java tests/AppCatalogTest.java
           java -cp /tmp/hermes-protocol-test LocalBridgeServerTest
+          java -cp /tmp/hermes-protocol-test AppCatalogTest
       - uses: android-actions/setup-android@v3
         with:
           packages: 'platform-tools'
@@ -44,9 +45,9 @@ jobs:
       - name: Prepare phone download
         run: |
           mkdir -p dist
-          cp app/build/outputs/apk/debug/app-debug.apk dist/Hermes-Bridge-0.4.0.apk
+          cp app/build/outputs/apk/debug/app-debug.apk dist/Hermes-Bridge-0.4.1.apk
           cd dist
-          sha256sum Hermes-Bridge-0.4.0.apk > SHA256SUMS.txt
+          sha256sum Hermes-Bridge-0.4.1.apk > SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
           name: Hermes-Bridge-APK
@@ -76,4 +77,4 @@ jobs:
           BUILD_SHA: ${{ github.sha }}
           RUN_NUMBER: ${{ github.run_number }}
         run: |
-          gh release create "dev-${RUN_NUMBER}" dist/* --target "$BUILD_SHA" --prerelease --title "Hermes Bridge 0.4.0 • device test ${RUN_NUMBER}" --notes 'Development APK 0.4.0: opt-in screen observations, stale-node checked click/long-click/scroll/text entry, launchable-app discovery, dialer, TTS, quick settings and basic device state. CI protocol tests use fake Android handlers; actual app workflows need phone verification. Install the matching adapter update and enable screen control explicitly. No live call audio or guaranteed background uptime. Development signing cache may be evicted.'
+          gh release create "dev-${RUN_NUMBER}" dist/* --target "$BUILD_SHA" --prerelease --title "Hermes Bridge 0.4.1 • device test ${RUN_NUMBER}" --notes 'Development APK 0.4.1 fixes app discovery running repeated label loads on the UI thread under a 1.2s deadline. A single cached background catalog coalesces slow reads; exact-package launch no longer enumerates all apps. Adds specific observation and TTS diagnostics. Existing 0.4 adapter remains compatible: renew the session pairing after installing. CI uses fake package providers/Android handlers; real TECNO phone retest is required.'
