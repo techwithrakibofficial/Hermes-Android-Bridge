@@ -206,15 +206,29 @@ Exact Hermes v2026.5.29.2 gateway/run.py handles /model without LLM generation;
 supports provider:model, session-only switching, and --global persistence.
 The session-only trial changes no saved default. Keep existing key/MCP/pairing.
 
+## Provider recovery progress and scheduling checkpoint
+User screenshot previously showed deepseek/deepseek-v4.1-flash-1017 via OpenRouter,
+so the initial free-route change had not been observed. User then ran explicit
+/model openrouter/free --provider openrouter --global; gateway returned untranslated
+switched/provider/context/max-output/capability/saved-global labels. User later
+said Done and supplied the requested bridge-status result: version0.4.2 ready,
+expected allowed actions/apps. This is user-reported recovery of an ordinary
+read-only tool workflow after the model-switch instructions. Exact selected model
+name was not shown in the post-switch confirmation; no independent account/quota
+inspection was performed. Do not promise unlimited/free-account quota removal.
+Home chat was previously confirmed with gateway.set_home.success.
+No check-in cron job IDs or actual scheduled message delivery confirmed yet.
+
 ## Single next action
-In Telegram send /new FIRST to clear the long failed conversation, then
-/model openrouter:openrouter/free (no --global yet), inspect confirmation, and
-request one short text-only reply. Source semantics verified, actual account/free
-inference not tested. Do not send /new after session-only switch without checking
-override retention. On success, test one read-only bridge call, then consider
---global persistence and future-job routing after confirmation. On failure, use
-the actual error rather than another guessed token-cap change. No APK update,
-reinstall, credential reset, new account or paid purchase selected.
+Ask Hermes in the same verified private Telegram chat to list relevant existing
+test jobs first and create/reuse one pending one-shot delivery test for3 minutes
+later. Pin that job to model openrouter/free and provider openrouter rather than
+assuming the saved global route. Deliver only to this Telegram home chat, repeat
+once, no Android actions or third-party messages. Return actual job ID/next run
+in Asia/Dhaka from the cron result. User must report actual received test message.
+Only after delivery passes create/reuse daily11:00/20:00 check-ins, avoiding
+duplicates and verifying timezone. Gateway must remain running; no new APK/setup.
+Do not claim check-ins are active or a test delivered merely from this status read.
 
 ## Still unimplemented or unverified
 - No live carrier/WhatsApp call audio, Telecom dialer role, incoming-call answer/
