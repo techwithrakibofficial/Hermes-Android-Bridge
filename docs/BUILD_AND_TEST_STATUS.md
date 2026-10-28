@@ -32,3 +32,6 @@ User supplied direct output: PRoot distro alias ubuntu; /usr/local/bin/hermes; v
 
 ## MCP adapter staging
 17 tests pass locally on Python3.12 for private token pairing, fake loopback HTTP, no automatic retries, argument rejection and legacy stdio handshake/tool discovery. Real Hermes MCP registration/discovery, PRoot-to-Android network access and live Android tool execution remain pending. Python3.12/3.14 CI added. Existing Hermes/Telegram runtime unchanged.
+
+## Confirmed phone MCP integration progress
+User provided output: private SDK1.26.0 installed successfully on Python3.14/aarch64; verified adapter download/private pairing; owned entry enabled; actual Hermes MCP discovery found android_bridge_status/android_home/android_back. Private-runtime gateway launched to Starting banner, with a missing user-bus message preceding it. Actual Telegram status/action tool invocation and visible Android Home through Hermes still pending. Do not rerun dependency setup.47 local tests had passed for the updated helper and existing suite.
