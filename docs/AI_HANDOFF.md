@@ -26,9 +26,9 @@ Local coding/testing:
 - Recovery helper integrations/hermes_bridge/recover_gateway.py added.13 recovery tests plus17 adapter tests =30 tests passed locally on Python3.12 using temp files/fake Telegram HTTP. No real account or phone recovery test yet.
 
 ## 4. Exact stopping point
-User replied All done after Telegram android_bridge_status/Home test instructions: record user-reported completion of that round trip. No independent phone observation.
-User clarified the full goal: broad phone operation and problem diagnosis, not just preconfigured action buttons. See docs/PHONE_AGENT_GOAL.md. Preserve current working foundations and continue sequentially.
-Prepared0.3.0 Android Settings/allowlisted-app launches and two new MCP tools.51 Python tests pass locally; Java socket tests and Android compile/lint await CI. Screen reading/click/scroll/type/diagnostic autonomy remain future work, not implemented in this build.
+User confirmed All done after Telegram status/Home test instructions; record user-reported 0.2 round-trip completion. User expanded the goal to general phone operation/diagnosis; docs/PHONE_AGENT_GOAL.md preserves it.
+0.3.0 Settings and allowlisted app-opening code built successfully. Android run40637536913 passed compile/lint and30 real-socket checks with a fake Android handler; publication succeeded as dev-11. Adapter run40637536937 passed51 tests on Python3.12 and3.14. No new Settings/app-launch phone results yet.
+APK https://github.com/techwithrakibofficial/Hermes-Android-Bridge/releases/download/dev-11/Hermes-Bridge-0.3.0.apk (9,337,448 bytes). Code commit b86c29673939df243f113832efe42af92c71c64b. Updated adapter source pinned to d0d742277c6b1850edf82305c13ef41a51afcbfd. Updated private-runtime setup hash 381b4a1aea4ba8768b30e052dc3dd5dc7353f14657b657f0e81cfe2b1d22efaa.
 
 ## 5. Outstanding/blockers
 1. Stop current foreground gateway, start Android app local bridge, copy pairing export into native Termux, then run the pinned setup command with explicit token forwarding to Ubuntu.
@@ -38,7 +38,7 @@ Prepared0.3.0 Android Settings/allowlisted-app launches and two new MCP tools.51
 5. Android may kill Termux processes; no background-uptime guarantee.
 
 ## 6. Single next action
-Verify0.3.0 CI/build/release. Then install the APK, start its bridge, copy fresh pairing export into native Termux and run the updated pinned setup helper. It reuses private Python, checks Settings/app capabilities and discovers5 tools. Test real Settings and WhatsApp launches from Telegram. Continue screen observation/click/type milestones after launch tests, following docs/PHONE_AGENT_GOAL.md.
+Follow docs/UPGRADE_0_3.md: install APK0.3.0, copy a fresh pairing export, run the pinned updater and verify Telegram Settings/WhatsApp launches. Existing private SDK is reused. Then implement screen observation/click/type loop, not another limited Home/Back-only design. Do not claim general autonomous phone repair or screen control is implemented yet.
 
 ## 7. Files/verification limits
 - integrations/hermes_bridge/RECOVERY.md: scope, checks, safe diagnostics and backups.
