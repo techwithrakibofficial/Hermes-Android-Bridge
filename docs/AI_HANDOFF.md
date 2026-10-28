@@ -219,16 +219,25 @@ inspection was performed. Do not promise unlimited/free-account quota removal.
 Home chat was previously confirmed with gateway.set_home.success.
 No check-in cron job IDs or actual scheduled message delivery confirmed yet.
 
+## Latest scheduled-delivery test result
+User pasted actual Telegram Cronjob Response for bangla-check-in-test, job ID
+b32a97a7322d. A generated Bengali greeting was delivered. This confirms receipt
+of the test job output, not exact requested text, timing accuracy, saved job model
+fields or single-shot completion metadata (none shown). Wording was awkward and
+did not match the requested sentence. Do not claim natural companion style tested.
+Home-channel setup and one scheduled-delivery path are now user-confirmed.
+No regular11:00/20:00 daily job IDs or next-run results provided yet.
+
 ## Single next action
-Ask Hermes in the same verified private Telegram chat to list relevant existing
-test jobs first and create/reuse one pending one-shot delivery test for3 minutes
-later. Pin that job to model openrouter/free and provider openrouter rather than
-assuming the saved global route. Deliver only to this Telegram home chat, repeat
-once, no Android actions or third-party messages. Return actual job ID/next run
-in Asia/Dhaka from the cron result. User must report actual received test message.
-Only after delivery passes create/reuse daily11:00/20:00 check-ins, avoiding
-duplicates and verifying timezone. Gateway must remain running; no new APK/setup.
-Do not claim check-ins are active or a test delivered merely from this status read.
+Ask Hermes to inspect test job b32a97a7322d and ensure no unintended repeating test
+remains active, then list existing relevant home-chat jobs and create/reuse at most
+two daily check-ins at11:00 and20:00 Asia/Dhaka. Explicitly pin model openrouter/free
+and provider openrouter; verify effective scheduler timezone/conversion without
+guessing next-run times. Deliver only to the verified Telegram home chat. Prompts
+should request one or two natural Bengali sentences rather than verbose awkward
+self-description. Repeating daily jobs must not inherit the test's repeat=1.
+Return actual IDs/schedule/next run and pause on user's stop request. Do not claim
+daily jobs active until confirmed or any real telephone calling/mic feature added.
 
 ## Still unimplemented or unverified
 - No live carrier/WhatsApp call audio, Telecom dialer role, incoming-call answer/
