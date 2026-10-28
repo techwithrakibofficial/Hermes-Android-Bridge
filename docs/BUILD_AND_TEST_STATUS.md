@@ -33,3 +33,12 @@ but exact cause unknown. Use read-only settling/reobservation, not blind retries
 User confirmed English speech audible and then Bengali speech audible. Pronunciation
 quality/feminine sound, mic input, real-app scrolling/sending/calling and live call
 audio remain unverified or unimplemented as documented. No new code/build needed.
+
+## Real Settings workflow and new provider error
+User reports the read-only Settings battery workflow reached the correct page.
+No final battery figures/highest-consuming app supplied. Tool invocation list
+alone is not evidence of each individual operation. Workflow paused on402
+openrouter_in_flight_budget/in_flight_budget_exhausted with Retry-After120s, a
+different blocker from the earlier oversized-output credit preflight. No code,
+config, APK or credential change made; cooldown and existing-page verification
+come first. Task battery report remains pending.

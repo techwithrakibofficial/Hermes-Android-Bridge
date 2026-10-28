@@ -164,16 +164,30 @@ Bengali-selection instructions confirmed Bengali speech was audible. This proves
 reported audio output, not a measured pronunciation quality, confirmed voice
 gender, microphone input, continuous conversation or phone-call audio.
 
+## Latest real Settings workflow — provider pacing blocker
+User asked read-only battery usage inspection. Bot invoked Settings opening,
+screen reads, search text, clicks, Back and scroll, then another click. User
+personally reports it reached the correct page. No battery-usage figures or
+highest-consuming app result has been supplied; task outcome remains pending.
+Do not infer every listed tool succeeded from invocation names alone.
+
+Provider failure is now HTTP402 with limit_source openrouter_in_flight_budget,
+reason in_flight_budget_exhausted, Retry-After120 seconds. This differs from the
+earlier openrouter_credits request for131072 output tokens. First follow the
+specific cooldown; do not immediately rerun the long workflow, reset credentials,
+reinstall APK or claim the account balance is zero. Smaller output/history may
+reduce estimated cost in future, but no additional limit/model change made here.
+No claim cooldown has already solved the next request.
+
 ## Single next action
-Core phone acceptance now includes exact-package launch, screen reads, pinned
-button click/test navigation, Bengali editable text, visible counter increment
-and audible English/Bengali TTS. No reinstall/update/re-pair is needed.
-Start an ordinary requested real workflow, preferably read-only Settings battery
-usage inspection with exact screen/result verification and no setting changes.
-Scroll in a real app and app-specific send/call workflows remain unverified.
-Keep max_tokens cap and existing provider/Telegram/private launcher. Check-ins
-remain unscheduled; new home-channel/timing/delivery setup must be verified if
-requested. No unsupported general-autonomy or all-features-complete claim.
+Pause model commands until at least120 seconds after the error and ongoing
+requests have settled. Preserve the existing Settings task/page; opening Settings
+again or replaying search/scroll can lose progress or repeat actions. Ask user for
+a screenshot of that existing Battery usage page to verify/read the actual values
+without another OpenRouter request. If later resuming the bot, use a bounded
+read-only observation of the restored Settings task rather than rerunning the
+whole action sequence. Navigational progress is reported successful; battery
+assessment is not yet complete. Keep current working APK/pairing/provider config.
 
 ## Still unimplemented or unverified
 - No live carrier/WhatsApp call audio, Telecom dialer role, incoming-call answer/
